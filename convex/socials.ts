@@ -419,6 +419,30 @@ export const fetchGitHubMetrics = action({
 
 // Database Mutations
 
+function normalizePlatformName(platform: string): string {
+  const normalized = platform.toLowerCase().trim();
+
+  // Handle Twitter/X aliases
+  if (
+    normalized === "x" ||
+    normalized === "x/twitter" ||
+    normalized.includes("twitter")
+  ) {
+    return "Twitter";
+  }
+
+  // Map to proper capitalization
+  const platformMap: Record<string, string> = {
+    bluesky: "Bluesky",
+    github: "GitHub",
+    twitch: "Twitch",
+    youtube: "YouTube",
+    linkedin: "LinkedIn",
+  };
+
+  return platformMap[normalized] || normalized;
+}
+
 export const updateSocialMetrics = mutation({
   args: {
     platform: v.string(),
@@ -429,16 +453,19 @@ export const updateSocialMetrics = mutation({
   },
   handler: async (ctx, args) => {
     const now = Date.now();
+    // Normalize platform name with proper capitalization and alias handling
+    const normalizedPlatform = normalizePlatformName(args.platform);
 
-    // Find existing record by platform
-    const existing = await ctx.db
-      .query("socials")
-      .filter((q) => q.eq(q.field("platform"), args.platform))
-      .first();
+    // Find existing record by platform (case-insensitive lookup)
+    const allSocials = await ctx.db.query("socials").collect();
+    const existing = allSocials.find(
+      (s) => normalizePlatformName(s.platform) === normalizedPlatform
+    );
 
     if (existing) {
       // Update existing record
       await ctx.db.patch(existing._id, {
+        platform: normalizedPlatform, // Normalize with proper capitalization
         follower_count: args.follower_count,
         subscriber_count: args.subscriber_count,
         profile_url: args.profile_url ?? existing.profile_url,
@@ -449,7 +476,7 @@ export const updateSocialMetrics = mutation({
     } else {
       // Insert new record
       const id = await ctx.db.insert("socials", {
-        platform: args.platform,
+        platform: normalizedPlatform, // Normalize with proper capitalization
         follower_count: args.follower_count,
         subscriber_count: args.subscriber_count,
         profile_url: args.profile_url,
@@ -458,6 +485,15 @@ export const updateSocialMetrics = mutation({
       });
       return id;
     }
+  },
+});
+
+export const deleteSocial = mutation({
+  args: {
+    id: v.id("socials"),
+  },
+  handler: async (ctx, args) => {
+    await ctx.db.delete(args.id);
   },
 });
 
@@ -556,6 +592,94 @@ export const syncAllPlatforms = action({
       successful,
       failed,
       total: platforms.length,
+    };
+  },
+});
+
+export const cleanupDuplicateSocials = action({
+  args: {},
+  handler: async (ctx): Promise<{ deleted: number; kept: number; total: number }> => {
+    // Query all socials records
+    const allSocials = await ctx.runQuery(api.socials.listSocials) as Array<{
+      _id: string;
+      platform: string;
+      follower_count: number;
+      subscriber_count?: number;
+      profile_url?: string;
+      url: string;
+      last_updated?: number;
+    }>;
+
+    // Group by normalized platform name
+    const groups = new Map<string, typeof allSocials>();
+    for (const social of allSocials) {
+      const normalized = normalizePlatformName(social.platform);
+      if (!groups.has(normalized)) {
+        groups.set(normalized, []);
+      }
+      groups.get(normalized)!.push(social);
+    }
+
+    let deleted = 0;
+    let kept = 0;
+
+    // Process each group
+    for (const [normalizedPlatform, records] of groups.entries()) {
+      if (records.length <= 1) {
+        // No duplicates, just update platform name if needed
+        const record = records[0];
+        if (record && record.platform !== normalizedPlatform) {
+          await ctx.runMutation(api.socials.updateSocialMetrics, {
+            platform: normalizedPlatform,
+            follower_count: record.follower_count,
+            subscriber_count: record.subscriber_count,
+            profile_url: record.profile_url,
+            url: record.url,
+          });
+        }
+        kept += records.length;
+        continue;
+      }
+
+      // Find the record to keep (most recent last_updated, or highest _id if no timestamp)
+      const recordToKeep = records.reduce((prev: SocialRecord, current: SocialRecord) => {
+        const prevTime = prev.last_updated ?? 0;
+        const currentTime = current.last_updated ?? 0;
+        if (currentTime > prevTime) {
+          return current;
+        }
+        if (currentTime === prevTime && current._id > prev._id) {
+          return current;
+        }
+        return prev;
+      });
+
+      // Update the kept record with normalized platform name
+      if (recordToKeep.platform !== normalizedPlatform) {
+        await ctx.runMutation(api.socials.updateSocialMetrics, {
+          platform: normalizedPlatform,
+          follower_count: recordToKeep.follower_count,
+          subscriber_count: recordToKeep.subscriber_count,
+          profile_url: recordToKeep.profile_url,
+          url: recordToKeep.url,
+        });
+      }
+
+      // Delete all other duplicate records
+      for (const record of records) {
+        if (record._id !== recordToKeep._id) {
+          await ctx.runMutation(api.socials.deleteSocial, { id: record._id });
+          deleted++;
+        }
+      }
+
+      kept++;
+    }
+
+    return {
+      deleted,
+      kept,
+      total: allSocials.length,
     };
   },
 });
