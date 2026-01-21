@@ -4,7 +4,8 @@ import { useState } from "react";
 import { useQuery, useAction } from "convex/react";
 import { api } from "../convex/_generated/api";
 import { Button } from "./ui/button";
-import { ArrowUpRight, RefreshCw, Loader2 } from "lucide-react";
+import { ArrowUpRight, RefreshCw } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 function formatTimestamp(timestamp?: number): string {
   if (!timestamp) return "Never";
@@ -29,6 +30,7 @@ export default function Socials() {
 
   const [syncingAll, setSyncingAll] = useState(false);
   const [syncingPlatform, setSyncingPlatform] = useState<string | null>(null);
+  const [clickedPlatform, setClickedPlatform] = useState<string | null>(null);
 
   const handleSyncAll = async () => {
     setSyncingAll(true);
@@ -42,13 +44,16 @@ export default function Socials() {
   };
 
   const handleSyncPlatform = async (platform: string) => {
-    setSyncingPlatform(platform);
+    const platformKey = platform.toLowerCase();
+    setClickedPlatform(platformKey);
+    setSyncingPlatform(platformKey);
     try {
       await syncPlatform({ platform });
     } catch (error) {
       console.error(`Failed to sync ${platform}:`, error);
     } finally {
       setSyncingPlatform(null);
+      setTimeout(() => setClickedPlatform(null), 500);
     }
   };
 
@@ -58,76 +63,102 @@ export default function Socials() {
         <h2 className="text-2xl font-semibold">Social Metrics</h2>
         <Button
           onClick={handleSyncAll}
-          disabled={syncingAll}
+          disabled={syncingAll || syncingPlatform !== null}
           variant="outline"
           size="sm"
           data-icon="inline-start"
         >
-          {syncingAll ? (
-            <Loader2 className="size-[1.2em] animate-spin" />
-          ) : (
-            <RefreshCw className="size-[1.2em]" />
-          )}
-          Sync All
+          <RefreshCw
+            className={cn("size-[1.2em]", syncingAll && "animate-spin")}
+          />
+          Refresh All
         </Button>
       </div>
       <div className="flex flex-wrap gap-4">
-        {socials?.map(({ _id, follower_count, subscriber_count, platform, url, profile_url, last_updated }) => {
-          const isSyncing = syncingPlatform === platform.toLowerCase();
-          const displayUrl = profile_url || url;
+        {socials?.map(
+          ({
+            _id,
+            follower_count,
+            subscriber_count,
+            platform,
+            url,
+            profile_url,
+            last_updated,
+          }) => {
+            const platformKey = platform.toLowerCase();
+            const isSyncing = syncingPlatform === platformKey;
+            const isClicked = clickedPlatform === platformKey;
+            const displayUrl = profile_url || url;
 
-          return (
-            <div key={_id} className="flex flex-col gap-2 border rounded-lg h-full w-fit aspect-square p-4 justify-between">
-              <div className="flex items-start justify-between">
-                <p className="font-semibold">{platform}</p>
-                <Button
-                  onClick={() => handleSyncPlatform(platform)}
-                  disabled={isSyncing || syncingAll}
-                  variant="ghost"
-                  size="icon-xs"
-                  title={`Sync ${platform}`}
-                >
-                  {isSyncing ? (
-                    <Loader2 className="size-3 animate-spin" />
-                  ) : (
-                    <RefreshCw className="size-3" />
-                  )}
-                </Button>
-              </div>
-              <div className="flex flex-col gap-1">
-                <span className="font-mono tabular-nums text-3xl">{follower_count}</span>
-                {subscriber_count !== undefined && subscriber_count > 0 && (
-                  <span className="font-mono tabular-nums text-lg text-muted-foreground">
-                    {subscriber_count} subscribers
-                  </span>
-                )}
-              </div>
-              <div className="flex flex-col gap-2">
-                {last_updated && (
-                  <p className="text-xs text-muted-foreground">
-                    Updated {formatTimestamp(last_updated)}
-                  </p>
-                )}
-                <Button 
-                  nativeButton={false}
-                  render={
-                    <a 
-                      href={displayUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
+            return (
+              <div
+                key={_id}
+                className="flex flex-col gap-4 border rounded-lg w-48 p-4 aspect-square justify-between"
+              >
+                <div className="flex items-start justify-between">
+                  <p className="font-semibold">{platform}</p>
+                  <Button
+                    onClick={() => handleSyncPlatform(platform)}
+                    disabled={isSyncing || syncingAll}
+                    variant="ghost"
+                    size="icon-xs"
+                    title={`Refresh ${platform}`}
+                  >
+                    <RefreshCw
+                      className={cn(
+                        "size-3 transition-transform",
+                        isClicked && "animate-[spin_0.5s_ease-out]",
+                        isSyncing && "animate-spin",
+                      )}
                     />
-                  }
-                  variant="secondary" 
-                  size="sm" 
-                  data-icon="inline-end"
-                >
-                  View Profile
-                  <ArrowUpRight className="size-[1.2em]" />
-                </Button>
+                  </Button>
+                </div>
+                <div className="flex flex-col gap-2">
+                  <div className="flex items-baseline gap-2">
+                    <span className="font-mono tabular-nums text-3xl">
+                      {follower_count}
+                    </span>
+                    <span className="font-mono text-sm text-muted-foreground">
+                      followers
+                    </span>
+                  </div>
+                  {subscriber_count !== undefined && subscriber_count > 0 && (
+                    <span className="font-mono tabular-nums text-sm text-muted-foreground">
+                      {subscriber_count} subscribers
+                    </span>
+                  )}
+                </div>
+                <div className="flex flex-col gap-2">
+                  {last_updated ? (
+                    <p className="text-xs text-muted-foreground">
+                      Updated {formatTimestamp(last_updated)}
+                    </p>
+                  ) : (
+                    <p className="text-xs text-destructive">
+                      Not updated
+                    </p>
+                  )}
+                  <Button
+                    nativeButton={false}
+                    render={
+                      <a
+                        href={displayUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      />
+                    }
+                    variant="linkInline"
+                    size="sm"
+                    data-icon="inline-end"
+                  >
+                    View Profile
+                    <ArrowUpRight className="size-[1.2em]" />
+                  </Button>
+                </div>
               </div>
-            </div>
-          );
-        })}
+            );
+          },
+        )}
       </div>
     </section>
   );

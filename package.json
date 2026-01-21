@@ -6,10 +6,13 @@
     "dev": "next dev --webpack",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "migrate:dev": "pnpm dlx convex run migrations:runAll",
+    "migrate:prod": "pnpm dlx convex run migrations:runAll --prod"
   },
   "dependencies": {
     "@base-ui/react": "^1.1.0",
+    "@convex-dev/migrations": "^0.3.1",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "convex": "^1.31.5",

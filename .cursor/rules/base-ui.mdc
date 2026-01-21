@@ -1,6 +1,6 @@
 ---
-name: base-ui
 description: Base UI's llms.txt
+alwaysApply: false
 ---
 
 # Base UI
@@ -69,4 +69,3 @@ The library is designed to be composable and styling agnostic.
 - [Direction Provider](https://base-ui.com/react/utils/direction-provider.md): A direction provider component that enables RTL behavior for Base UI components.
 - [mergeProps](https://base-ui.com/react/utils/merge-props.md): A utility to merge multiple sets of React props, handling event handlers, className, and style props intelligently.
 - [useRender](https://base-ui.com/react/utils/use-render.md): Hook for enabling a render prop in custom components.
-
