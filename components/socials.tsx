@@ -1,10 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useQuery, useAction } from "convex/react";
 import { api } from "../convex/_generated/api";
 import { Button } from "./ui/button";
-import { ArrowUpRight, RefreshCw } from "lucide-react";
+// @ts-expect-error - Direct import for performance (avoids loading 1,583 modules from barrel)
+import ArrowUpRight from "lucide-react/dist/esm/icons/arrow-up-right";
+// @ts-expect-error - Direct import for performance (avoids loading 1,583 modules from barrel)
+import RefreshCw from "lucide-react/dist/esm/icons/refresh-cw";
 import { cn } from "@/lib/utils";
 
 function formatTimestamp(timestamp?: number): string {
@@ -31,6 +34,7 @@ export default function Socials() {
   const [syncingAll, setSyncingAll] = useState(false);
   const [syncingPlatform, setSyncingPlatform] = useState<string | null>(null);
   const [clickedPlatform, setClickedPlatform] = useState<string | null>(null);
+  const clickedPlatformTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const handleSyncAll = async () => {
     setSyncingAll(true);
@@ -45,6 +49,13 @@ export default function Socials() {
 
   const handleSyncPlatform = async (platform: string) => {
     const platformKey = platform.toLowerCase();
+    
+    // Clear any existing timeout to prevent race conditions
+    if (clickedPlatformTimeoutRef.current) {
+      clearTimeout(clickedPlatformTimeoutRef.current);
+      clickedPlatformTimeoutRef.current = null;
+    }
+    
     setClickedPlatform(platformKey);
     setSyncingPlatform(platformKey);
     try {
@@ -53,7 +64,10 @@ export default function Socials() {
       console.error(`Failed to sync ${platform}:`, error);
     } finally {
       setSyncingPlatform(null);
-      setTimeout(() => setClickedPlatform(null), 500);
+      clickedPlatformTimeoutRef.current = setTimeout(() => {
+        setClickedPlatform(null);
+        clickedPlatformTimeoutRef.current = null;
+      }, 500);
     }
   };
 
