@@ -6,7 +6,7 @@ import { ConvexClientProvider } from "./ConvexClientProvider";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { NavSidebar } from "@/components/nav-sidebar";
 
-const inter = Inter({subsets:['latin'],variable:'--font-sans'});
+const inter = Inter({ subsets: ['latin'], variable: '--font-sans' });
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -42,7 +42,6 @@ export default function RootLayout({
           <SidebarProvider>
             <NavSidebar />
             <ConvexClientProvider>
-              <SidebarTrigger />
               {children}
             </ConvexClientProvider>
           </SidebarProvider>

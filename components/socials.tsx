@@ -263,8 +263,8 @@ export default function Socials() {
                 refreshAllResult && refreshAllResult.failed.length > 0
                   ? "destructive"
                   : refreshAllResult &&
-                      refreshAllResult.failed.length === 0 &&
-                      refreshAllResult.successful.length > 0
+                    refreshAllResult.failed.length === 0 &&
+                    refreshAllResult.successful.length > 0
                     ? "default"
                     : "outline"
               }
@@ -329,7 +329,7 @@ export default function Socials() {
           </AlertDialog>
         </div>
       </div>
-      <div className="grid grid-cols-2 gap-4 @container @[480px]:grid-cols-3 @[768px]:grid-cols-4 @[1024px]:grid-cols-4 @[1280px]:grid-cols-5">
+      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6">
         {socials?.map(
           ({
             _id,

@@ -450,7 +450,7 @@ function SidebarGroupContent({
     <div
       data-slot="sidebar-group-content"
       data-sidebar="group-content"
-      className={cn("text-sm w-full", className)}
+      className={cn("text-sm w-full ", className)}
       {...props}
     />
   )
