@@ -42,14 +42,14 @@ function formatTimestamp(timestamp?: number): string {
 
 export default function Socials() {
   const socials = useQuery(api.socials.listSocials);
-  const syncAll = useAction(api.socials.syncAllPlatforms);
-  const syncPlatform = useAction(api.socials.syncPlatform);
+  const refreshAll = useAction(api.socials.refreshAllPlatforms);
+  const refreshPlatform = useAction(api.socials.refreshPlatform);
 
-  const [syncingAll, setSyncingAll] = useState(false);
-  const [syncingPlatform, setSyncingPlatform] = useState<string | null>(null);
+  const [refreshingAll, setRefreshingAll] = useState(false);
+  const [refreshingPlatform, setRefreshingPlatform] = useState<string | null>(null);
   const [clickedPlatform, setClickedPlatform] = useState<string | null>(null);
   const clickedPlatformTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const [syncAllResult, setSyncAllResult] = useState<{
+  const [refreshAllResult, setRefreshAllResult] = useState<{
     successful: string[];
     failed: Array<{ platform: string; error: string }>;
     total: number;
@@ -128,15 +128,15 @@ export default function Socials() {
     });
   }, [socials]);
 
-  const handleSyncAll = async () => {
-    setSyncingAll(true);
-    setSyncAllResult(null);
+  const handleRefreshAll = async () => {
+    setRefreshingAll(true);
+    setRefreshAllResult(null);
     try {
-      const result = await syncAll({});
-      setSyncAllResult(result);
+      const result = await refreshAll({});
+      setRefreshAllResult(result);
     } catch (error) {
-      console.error("Failed to sync all platforms:", error);
-      setSyncAllResult({
+      console.error("Failed to refresh all platforms:", error);
+      setRefreshAllResult({
         successful: [],
         failed: [
           {
@@ -147,11 +147,11 @@ export default function Socials() {
         total: 0,
       });
     } finally {
-      setSyncingAll(false);
+      setRefreshingAll(false);
     }
   };
 
-  const handleSyncPlatform = async (platform: string) => {
+  const handleRefreshPlatform = async (platform: string) => {
     const platformKey = platform.toLowerCase();
 
     // Clear any existing timeouts for this platform
@@ -175,10 +175,10 @@ export default function Socials() {
     });
 
     setClickedPlatform(platformKey);
-    setSyncingPlatform(platformKey);
+    setRefreshingPlatform(platformKey);
 
     try {
-      await syncPlatform({ platform });
+      await refreshPlatform({ platform });
       // Success - show message then revert
       setPlatformResults((prev) => {
         const next = new Map(prev);
@@ -206,9 +206,9 @@ export default function Socials() {
         });
         return next;
       });
-      console.error(`Failed to sync ${platform}:`, error);
+      console.error(`Failed to refresh ${platform}:`, error);
     } finally {
-      setSyncingPlatform(null);
+      setRefreshingPlatform(null);
       // Keep clickedPlatform for animation, clear after animation
       clickedPlatformTimeoutRef.current = setTimeout(() => {
         setClickedPlatform(null);
@@ -223,20 +223,20 @@ export default function Socials() {
         <h2 className="text-2xl font-semibold">Social Metrics</h2>
         <div className="flex items-center gap-2">
           {/* Success/Error Message */}
-          {syncAllResult && (
+          {refreshAllResult && (
             <div className="flex items-center gap-1.5 text-sm animate-fade-slide-up">
-              {syncAllResult.failed.length > 0 ? (
+              {refreshAllResult.failed.length > 0 ? (
                 <>
                   <AlertCircle className="size-4 text-destructive" />
                   <span className="text-muted-foreground">
-                    {syncAllResult.failed.length} failed
+                    {refreshAllResult.failed.length} failed
                   </span>
                 </>
-              ) : syncAllResult.successful.length > 0 ? (
+              ) : refreshAllResult.successful.length > 0 ? (
                 <>
                   <Check className="size-4 text-green-600 dark:text-green-500" />
                   <span className="text-muted-foreground">
-                    All {syncAllResult.successful.length} synced
+                    All {refreshAllResult.successful.length} refreshed
                   </span>
                 </>
               ) : null}
@@ -245,7 +245,7 @@ export default function Socials() {
 
           {/* Alert Dialog with trigger and content */}
           <AlertDialog>
-            {syncAllResult && syncAllResult.failed.length > 0 && (
+            {refreshAllResult && refreshAllResult.failed.length > 0 && (
               <AlertDialogTrigger
                 render={
                   <Button variant="link" size="sm" className="h-auto p-0">
@@ -257,35 +257,35 @@ export default function Socials() {
 
             {/* Refresh All Button */}
             <Button
-              onClick={handleSyncAll}
-              disabled={syncingAll || syncingPlatform !== null}
+              onClick={handleRefreshAll}
+              disabled={refreshingAll || refreshingPlatform !== null}
               variant={
-                syncAllResult && syncAllResult.failed.length > 0
+                refreshAllResult && refreshAllResult.failed.length > 0
                   ? "destructive"
-                  : syncAllResult &&
-                      syncAllResult.failed.length === 0 &&
-                      syncAllResult.successful.length > 0
+                  : refreshAllResult &&
+                      refreshAllResult.failed.length === 0 &&
+                      refreshAllResult.successful.length > 0
                     ? "default"
                     : "outline"
               }
               size="sm"
               data-icon="inline-start"
             >
-              {syncingAll ? (
+              {refreshingAll ? (
                 <RefreshCw
                   className={cn(
                     "size-[1.2em] animate-spin transition-opacity duration-200"
                   )}
                   style={{ transitionTimingFunction: "var(--ease-out-cubic)" }}
                 />
-              ) : syncAllResult && syncAllResult.failed.length > 0 ? (
+              ) : refreshAllResult && refreshAllResult.failed.length > 0 ? (
                 <AlertCircle
                   className={cn("size-[1.2em] transition-opacity duration-200")}
                   style={{ transitionTimingFunction: "var(--ease-out-cubic)" }}
                 />
-              ) : syncAllResult &&
-                syncAllResult.failed.length === 0 &&
-                syncAllResult.successful.length > 0 ? (
+              ) : refreshAllResult &&
+                refreshAllResult.failed.length === 0 &&
+                refreshAllResult.successful.length > 0 ? (
                 <Check
                   className={cn("size-[1.2em] transition-opacity duration-200")}
                   style={{ transitionTimingFunction: "var(--ease-out-cubic)" }}
@@ -300,17 +300,17 @@ export default function Socials() {
             </Button>
 
             {/* Dialog Content */}
-            {syncAllResult && syncAllResult.failed.length > 0 && (
+            {refreshAllResult && refreshAllResult.failed.length > 0 && (
               <AlertDialogContent size="default">
                 <AlertDialogHeader>
-                  <AlertDialogTitle>Sync Errors</AlertDialogTitle>
+                  <AlertDialogTitle>Refresh Errors</AlertDialogTitle>
                   <AlertDialogDescription>
-                    {syncAllResult.failed.length} of {syncAllResult.total}{" "}
-                    platforms failed to sync.
+                    {refreshAllResult.failed.length} of {refreshAllResult.total}{" "}
+                    platforms failed to refresh.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <div className="space-y-2 max-h-[60vh] overflow-y-auto">
-                  {syncAllResult.failed.map((failure, index) => (
+                  {refreshAllResult.failed.map((failure, index) => (
                     <div key={index} className="rounded-md bg-muted p-3">
                       <p className="font-medium capitalize">
                         {failure.platform}
@@ -353,7 +353,7 @@ export default function Socials() {
                   <p className="font-semibold">{platform}</p>
                   {(() => {
                     const result = platformResults.get(platformKey);
-                    const isSyncing = syncingPlatform === platformKey;
+                    const isRefreshing = refreshingPlatform === platformKey;
 
                     // Show status message if there's a result
                     if (result) {
@@ -362,7 +362,7 @@ export default function Socials() {
                         return (
                           <div className="flex items-center gap-1.5 text-xs text-muted-foreground animate-fade-scale">
                             <Check className="size-3 text-green-600 dark:text-green-500" />
-                            <span>Synced</span>
+                            <span>Refreshed</span>
                           </div>
                         );
                       } else {
@@ -390,10 +390,10 @@ export default function Socials() {
                               <AlertDialogContent size="default" className="max-w-lg w-[90vw] sm:w-full">
                                 <AlertDialogHeader>
                                   <AlertDialogTitle>
-                                    Sync Error
+                                    Refresh Error
                                   </AlertDialogTitle>
                                   <AlertDialogDescription>
-                                    Failed to sync {platform}.
+                                    Failed to refresh {platform}.
                                   </AlertDialogDescription>
                                 </AlertDialogHeader>
                                 <div className="rounded-md bg-muted p-3 max-h-[60vh] overflow-y-auto">
@@ -405,7 +405,7 @@ export default function Socials() {
                                   <AlertDialogCancel>Close</AlertDialogCancel>
                                   <Button
                                     onClick={() => {
-                                      handleSyncPlatform(platform);
+                                      handleRefreshPlatform(platform);
                                     }}
                                     variant="default"
                                   >
@@ -419,11 +419,11 @@ export default function Socials() {
                       }
                     }
 
-                    // Show button if no result (normal state or syncing)
+                    // Show button if no result (normal state or refreshing)
                     return (
                       <Button
-                        onClick={() => handleSyncPlatform(platform)}
-                        disabled={isSyncing || syncingAll}
+                        onClick={() => handleRefreshPlatform(platform)}
+                        disabled={isRefreshing || refreshingAll}
                         variant="ghost"
                         size="icon-xs"
                         title={`Refresh ${platform}`}
@@ -433,7 +433,7 @@ export default function Socials() {
                           className={cn(
                             "size-3 transition-transform",
                             isClicked && "animate-[spin_0.5s_ease-out]",
-                            (isSyncing || syncingAll) && "animate-spin",
+                            (isRefreshing || refreshingAll) && "animate-spin",
                           )}
                         />
                       </Button>

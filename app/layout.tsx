@@ -3,6 +3,8 @@ import { Geist, Geist_Mono, Inter } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider"
 import { ConvexClientProvider } from "./ConvexClientProvider";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { NavSidebar } from "@/components/nav-sidebar";
 
 const inter = Inter({subsets:['latin'],variable:'--font-sans'});
 
@@ -37,9 +39,13 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <ConvexClientProvider>
-            {children}
-          </ConvexClientProvider>
+          <SidebarProvider>
+            <NavSidebar />
+            <ConvexClientProvider>
+              <SidebarTrigger />
+              {children}
+            </ConvexClientProvider>
+          </SidebarProvider>
         </ThemeProvider>
       </body>
     </html>

@@ -498,9 +498,9 @@ export const deleteSocial = mutation({
   },
 });
 
-// Sync Actions
+// Refresh Actions
 
-export const syncPlatform = action({
+export const refreshPlatform = action({
   args: {
     platform: v.string(),
   },
@@ -553,7 +553,7 @@ export const syncPlatform = action({
   },
 });
 
-export const syncAllPlatforms = action({
+export const refreshAllPlatforms = action({
   args: {},
   handler: async (ctx) => {
     const platforms = [
@@ -567,7 +567,7 @@ export const syncAllPlatforms = action({
 
     const results = await Promise.allSettled(
       platforms.map((platform) =>
-        ctx.runAction(api.socials.syncPlatform, { platform })
+        ctx.runAction(api.socials.refreshPlatform, { platform })
       )
     );
 

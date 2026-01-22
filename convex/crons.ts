@@ -3,14 +3,14 @@ import { api } from "./_generated/api";
 
 const crons = cronJobs();
 
-// Daily sync at 00:00 UTC (midnight)
+// Daily refresh at 00:00 UTC (midnight)
 crons.daily(
-  "sync-all-social-platforms",
+  "refresh-all-social-platforms",
   {
     hourUTC: 0, // Midnight UTC
     minuteUTC: 0,
   },
-  api.socials.syncAllPlatforms
+  api.socials.refreshAllPlatforms
 );
 
 export default crons;

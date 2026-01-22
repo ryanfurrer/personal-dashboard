@@ -160,16 +160,16 @@ http.route({
   }),
 });
 
-// POST /api/socials/sync - Manual sync trigger
-// Register before prefix route to avoid matching /api/socials/sync as a platform
+// POST /api/socials/refresh - Manual refresh trigger
+// Register before prefix route to avoid matching /api/socials/refresh as a platform
 http.route({
-  path: "/api/socials/sync",
+  path: "/api/socials/refresh",
   method: "POST",
   handler: httpAction(async (ctx) => {
     try {
-      await ctx.runAction(api.socials.syncAllPlatforms);
+      await ctx.runAction(api.socials.refreshAllPlatforms);
       
-      return new Response(JSON.stringify({ success: true, message: "Sync initiated" }), {
+      return new Response(JSON.stringify({ success: true, message: "Refresh initiated" }), {
         status: 200,
         headers: {
           "Content-Type": "application/json",
@@ -189,9 +189,9 @@ http.route({
   }),
 });
 
-// OPTIONS /api/socials/sync - CORS preflight
+// OPTIONS /api/socials/refresh - CORS preflight
 http.route({
-  path: "/api/socials/sync",
+  path: "/api/socials/refresh",
   method: "OPTIONS",
   handler: httpAction(async () => {
     return new Response(null, {
@@ -211,8 +211,8 @@ http.route({
     // Extract platform from path: /api/socials/twitter -> "twitter"
     const platform = url.pathname.replace("/api/socials/", "").toLowerCase();
     
-    // Exclude "sync" from platform matching (handled by exact route above)
-    if (!platform || platform === "sync") {
+    // Exclude "refresh" from platform matching (handled by exact route above)
+    if (!platform || platform === "refresh") {
       return new Response(JSON.stringify({ error: "Platform parameter required" }), {
         status: 400,
         headers: {
