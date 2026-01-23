@@ -1,5 +1,5 @@
 
-import Socials from "@/components/socials";
+import SocialPlatformCardSection from "@/components/social-platform-card-section";
 import { Kbd } from "@/components/ui/kbd";
 import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
@@ -29,7 +29,7 @@ export default function Page() {
                 </div>
             </header>
             <main className="p-4 lg:p-6">
-                <Socials />
+                <SocialPlatformCardSection />
             </main>
         </div>
     );

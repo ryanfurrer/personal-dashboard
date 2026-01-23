@@ -5,8 +5,9 @@ import { useQuery, useAction } from "convex/react";
 import { api } from "../convex/_generated/api";
 import { SocialsRefreshAllButton } from "./socials-refresh-all-button";
 import { SocialPlatformCard } from "./socials-platform-card";
+import SectionHeader from "./section-header";
 
-export default function Socials() {
+export default function SocialPlatformCardSection() {
   const socials = useQuery(api.socials.listSocials);
   const refreshAll = useAction(api.socials.refreshAllPlatforms);
   const refreshPlatform = useAction(api.socials.refreshPlatform);
@@ -185,15 +186,14 @@ export default function Socials() {
 
   return (
     <section className="flex flex-col gap-6">
-      <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-semibold">Social Metrics</h2>
+      <SectionHeader title="Social Metrics" description="Update all social metrics at once" action={
         <SocialsRefreshAllButton
           refreshingAll={refreshingAll}
           refreshingPlatform={refreshingPlatform}
           refreshAllResult={refreshAllResult}
           onRefreshAll={handleRefreshAll}
         />
-      </div>
+      } />
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6">
         {socials?.map(
           ({
