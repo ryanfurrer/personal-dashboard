@@ -42,7 +42,9 @@ export default function RootLayout({
           <SidebarProvider className="p-2">
             <NavSidebar />
             <ConvexClientProvider>
-              {children}
+              <div className="w-full bg-background rounded-lg">
+                {children}
+              </div>
             </ConvexClientProvider>
           </SidebarProvider>
         </ThemeProvider>

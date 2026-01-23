@@ -1,3 +1,5 @@
+"use client"
+
 import {
   Sidebar,
   SidebarContent,
@@ -15,6 +17,8 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
+import { usePathname } from "next/navigation";
+import Link from "next/link";
 
 
 const items = [
@@ -23,17 +27,15 @@ const items = [
     url: "/",
     icon: Home,
   },
-]
-
-
-const comingSoonItems = [
   {
     title: "Socials",
     url: "/socials",
     icon: MessageCircle,
-    disabled: true,
-    tooltip: "Coming soon",
   },
+]
+
+
+const comingSoonItems = [
   {
     title: "Habits",
     url: "/habits",
@@ -75,6 +77,7 @@ const footerItems = [
 ]
 
 export function NavSidebar() {
+  const pathname = usePathname();
   return (
     <Sidebar collapsible="icon" className="border-none">
       <SidebarContent className="pt-4">
@@ -85,21 +88,21 @@ export function NavSidebar() {
 
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton render={
-                    <a href={item.url}>
-                      <item.icon />
+                    <Link href={item.url}>
+                      <item.icon className="size-4" />
                       <span>{item.title}</span>
-                    </a>
-                  } />
+                    </Link>
+                  } isActive={pathname === item.url} />
                 </SidebarMenuItem>))}
               {comingSoonItems.map((item) => (
                 <Tooltip key={item.title} aria-label={`${item.title} is ${item.tooltip}`}>
                   <TooltipTrigger>
                     <SidebarMenuItem>
                       <SidebarMenuButton render={
-                        <a href={item.url} aria-disabled={item.disabled}>
-                          <item.icon />
+                        <Link href={item.url} aria-disabled={item.disabled} className="cursor-not-allowed">
+                          <item.icon className="size-4" />
                           <span>{item.title}</span>
-                        </a>
+                        </Link>
                       } />
                     </SidebarMenuItem>
                   </TooltipTrigger>

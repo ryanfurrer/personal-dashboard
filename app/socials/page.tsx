@@ -1,0 +1,14 @@
+import PageHeader from "@/components/page-header";
+import SocialPlatformCardSection from "@/components/social-platform-card-section";
+import { MessageCircle } from "lucide-react";
+
+export default function SocialsPage() {
+    return (
+        <>
+            <PageHeader icon={MessageCircle} title="Socials" />
+            <main className="p-4 lg:p-6">
+                <SocialPlatformCardSection />
+            </main>
+        </>
+    );
+}
