@@ -3,11 +3,14 @@ import { api } from "./_generated/api";
 
 const crons = cronJobs();
 
-// Run hourly at minute 0; action gates execution to 00:00 America/New_York.
-crons.interval(
-  "refresh-all-social-platforms-eastern-midnight",
-  { hours: 1 },
-  api.socials.refreshAllPlatformsAtEasternMidnight
+// Daily refresh at 00:00 EDT / 01:00 EST (04:00 / 05:00 UTC)
+crons.daily(
+  "refresh-all-social-platforms",
+  {
+    hourUTC: 4,
+    minuteUTC: 0,
+  },
+  api.socials.refreshAllPlatforms,
 );
 
 export default crons;
