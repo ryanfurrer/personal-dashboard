@@ -8,7 +8,10 @@ import {
   SidebarGroupContent,
   SidebarMenu,
   SidebarMenuButton,
-  SidebarMenuItem
+  SidebarMenuItem,
+  SidebarMenuSub,
+  SidebarMenuSubButton,
+  SidebarMenuSubItem,
 } from "@/components/ui/sidebar"
 import { CalendarCheck, Home, ListTodo, LogOut, MessageCircle, NotebookText, NotepadText } from "lucide-react"
 import { ModeToggle } from "./mode-toggle"
@@ -19,6 +22,8 @@ import {
 } from "@/components/ui/tooltip"
 import { usePathname } from "next/navigation";
 import Link from "next/link";
+import { useQuery } from "convex/react";
+import { api } from "@/convex/_generated/api";
 
 
 const items = [
@@ -32,17 +37,15 @@ const items = [
     url: "/socials",
     icon: MessageCircle,
   },
-]
-
-
-const comingSoonItems = [
   {
     title: "Habits",
     url: "/habits",
     icon: CalendarCheck,
-    disabled: true,
-    tooltip: "Coming soon",
   },
+]
+
+
+const comingSoonItems = [
   {
     title: "Tasks",
     url: "/tasks",
@@ -78,6 +81,9 @@ const footerItems = [
 
 export function NavSidebar() {
   const pathname = usePathname();
+  const archivedHabitsCount = useQuery(api.habits.getArchivedHabitsCount, {});
+  const isHabitsRoute = pathname === "/habits" || pathname.startsWith("/habits/");
+
   return (
     <Sidebar collapsible="icon" className="border-none">
       <SidebarContent className="pt-4">
@@ -85,21 +91,36 @@ export function NavSidebar() {
           <SidebarGroupContent>
             <SidebarMenu>
               {items.map((item) => (
-
                 <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton render={
-                    <Link href={item.url}>
-                      <item.icon className="size-4" />
-                      <span>{item.title}</span>
-                    </Link>
-                  } isActive={pathname === item.url} />
-                </SidebarMenuItem>))}
+                  <SidebarMenuButton
+                    render={
+                      <Link href={item.url}>
+                        <item.icon className="size-4" />
+                        <span>{item.title}</span>
+                      </Link>
+                    }
+                    isActive={item.url === "/habits" ? isHabitsRoute : pathname === item.url}
+                  />
+                  {item.url === "/habits" && (
+                    <SidebarMenuSub>
+                      {(archivedHabitsCount ?? 0) > 0 && (
+                        <SidebarMenuSubItem>
+                          <SidebarMenuSubButton
+                            render={<Link href="/habits/archived">Archived</Link>}
+                            isActive={pathname === "/habits/archived"}
+                          />
+                        </SidebarMenuSubItem>
+                      )}
+                    </SidebarMenuSub>
+                  )}
+                </SidebarMenuItem>
+              ))}
               {comingSoonItems.map((item) => (
                 <Tooltip key={item.title} aria-label={`${item.title} is ${item.tooltip}`}>
                   <TooltipTrigger>
                     <SidebarMenuItem>
                       <SidebarMenuButton render={
-                        <Link href={item.url} aria-disabled={item.disabled} className="cursor-not-allowed">
+                        <Link href={item.url} aria-disabled={item.disabled} className={item.disabled ? "cursor-not-allowed" : undefined}>
                           <item.icon className="size-4" />
                           <span>{item.title}</span>
                         </Link>

@@ -39,14 +39,14 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <SidebarProvider className="p-2">
-            <NavSidebar />
-            <ConvexClientProvider>
+          <ConvexClientProvider>
+            <SidebarProvider className="p-2">
+              <NavSidebar />
               <div className="w-full bg-background rounded-lg">
                 {children}
               </div>
-            </ConvexClientProvider>
-          </SidebarProvider>
+            </SidebarProvider>
+          </ConvexClientProvider>
         </ThemeProvider>
       </body>
     </html>

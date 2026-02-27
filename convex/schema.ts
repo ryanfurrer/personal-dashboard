@@ -4,6 +4,53 @@ import { v } from "convex/values";
 export default defineSchema({
   // Other tables here...
 
+  habitCategories: defineTable({
+    name: v.string(),
+    display_name: v.string(),
+    created_at: v.number(),
+    updated_at: v.number(),
+  }).index("by_name", ["name"]),
+
+  habits: defineTable({
+    name: v.string(),
+    description: v.optional(v.string()),
+    start_date: v.string(), // YYYY-MM-DD local date
+    frequency_type: v.union(
+      v.literal("daily"),
+      v.literal("weekly"),
+      v.literal("monthly"),
+    ),
+    target_count: v.float64(),
+    selected_weekdays: v.optional(v.array(v.float64())), // Monday=1 ... Sunday=7
+    category_id: v.optional(v.id("habitCategories")),
+    status: v.union(
+      v.literal("active"),
+      v.literal("archived"),
+      v.literal("deleted"),
+    ),
+    created_at: v.number(),
+    updated_at: v.number(),
+    archived_at: v.optional(v.number()),
+    deleted_at: v.optional(v.number()),
+  })
+    .index("by_status", ["status"])
+    .index("by_category", ["category_id"])
+    .index("by_start_date", ["start_date"])
+    .index("by_status_category", ["status", "category_id"]),
+
+  habitCompletions: defineTable({
+    habit_id: v.id("habits"),
+    completed_at: v.number(),
+    local_date: v.string(), // YYYY-MM-DD local date
+    period_key: v.string(), // D:YYYY-MM-DD, W:YYYY-Www, M:YYYY-MM
+    count: v.float64(),
+    is_streak_eligible: v.boolean(),
+    created_at: v.number(),
+  })
+    .index("by_habit", ["habit_id"])
+    .index("by_habit_local_date", ["habit_id", "local_date"])
+    .index("by_habit_period", ["habit_id", "period_key"]),
+
   socials: defineTable({
     follower_count: v.float64(), // Free tier metric (all platforms)
     platform: v.string(),
