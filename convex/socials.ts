@@ -80,57 +80,43 @@ export const fetchBlueskyMetrics = action({
         : `${normalizedHandle}.bsky.social`;
 
     try {
-      const profilePath = "/xrpc/app.bsky.actor.getProfile";
-      const urls = [
-        `https://public.api.bsky.app${profilePath}`,
-        `https://bsky.social${profilePath}`,
-      ];
-      let response: Response | null = null;
+      const profileUrl = new URL(
+        "https://public.api.bsky.app/xrpc/app.bsky.actor.getProfile"
+      );
+      profileUrl.searchParams.set("actor", formattedHandle);
 
-      for (const baseUrl of urls) {
-        const profileUrl = new URL(baseUrl);
-        profileUrl.searchParams.set("actor", formattedHandle);
-        response = await fetch(profileUrl.toString(), {
-          method: "GET",
-          headers: {
-            Accept: "application/json",
-          },
-        });
+      let data: { followersCount?: number; handle?: string } | null = null;
+      let lastError = "Unknown Bluesky error";
 
+      for (let attempt = 0; attempt < 3; attempt++) {
+        const response = await fetch(profileUrl.toString());
         if (response.ok) {
+          data = (await response.json()) as {
+            followersCount?: number;
+            handle?: string;
+          };
           break;
         }
 
         const errorText = await response.text();
-        const isBodyError =
-          response.status === 400 &&
-          errorText.includes("A request body was provided when none was expected");
-        if (!isBodyError) {
-          throw new Error(
-            `Bluesky API error: ${response.status} ${response.statusText} - ${errorText}`
-          );
+        lastError = `${response.status} ${response.statusText} - ${errorText}`;
+        const isRetryable =
+          (response.status === 400 &&
+            errorText.includes("A request body was provided when none was expected")) ||
+          (response.status === 401 && errorText.includes("AuthMissing")) ||
+          response.status >= 500;
+
+        if (!isRetryable) {
+          break;
         }
       }
 
-      if (!response) {
-        throw new Error("Bluesky API request failed before receiving a response");
-      }
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(
-          `Bluesky API error: ${response.status} ${response.statusText} - ${errorText}`
-        );
-      }
-
-      const data = await response.json();
-
       if (!data) {
-        throw new Error("Bluesky API returned no data");
+        throw new Error(`Bluesky API error: ${lastError}`);
       }
 
       const follower_count = data.followersCount ?? 0;
-      const profile_url = `https://bsky.app/profile/${formattedHandle}`;
+      const profile_url = `https://bsky.app/profile/${data.handle ?? formattedHandle}`;
 
       return {
         follower_count,
