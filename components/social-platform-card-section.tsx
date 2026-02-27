@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { useQuery, useAction } from "convex/react";
 import { api } from "../convex/_generated/api";
 import { SocialsRefreshAllButton } from "./socials-refresh-all-button";
@@ -21,6 +21,7 @@ export default function SocialPlatformCardSection() {
     failed: Array<{ platform: string; error: string }>;
     total: number;
   } | null>(null);
+  const refreshAllResultTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const [platformResults, setPlatformResults] = useState<
     Map<
       string,
@@ -47,12 +48,28 @@ export default function SocialPlatformCardSection() {
     const timestampTimeoutMap = timestampAnimationTimeoutRef.current;
     return () => {
       // Cleanup all timeouts on unmount
+      if (refreshAllResultTimeoutRef.current) {
+        clearTimeout(refreshAllResultTimeoutRef.current);
+        refreshAllResultTimeoutRef.current = null;
+      }
       timeoutMap.forEach((timeout) => clearTimeout(timeout));
       timeoutMap.clear();
       timestampTimeoutMap.forEach((timeout) => clearTimeout(timeout));
       timestampTimeoutMap.clear();
     };
   }, []);
+
+  // Auto-clear Refresh All status after a short delay
+  useEffect(() => {
+    if (!refreshAllResult) return;
+    if (refreshAllResultTimeoutRef.current) {
+      clearTimeout(refreshAllResultTimeoutRef.current);
+    }
+    refreshAllResultTimeoutRef.current = setTimeout(() => {
+      setRefreshAllResult(null);
+      refreshAllResultTimeoutRef.current = null;
+    }, 4000);
+  }, [refreshAllResult]);
 
   // Track timestamp updates and trigger animations
   useEffect(() => {
@@ -95,7 +112,7 @@ export default function SocialPlatformCardSection() {
     });
   }, [socials]);
 
-  const handleRefreshAll = async () => {
+  const handleRefreshAll = useCallback(async () => {
     setRefreshingAll(true);
     setRefreshAllResult(null);
     try {
@@ -116,9 +133,9 @@ export default function SocialPlatformCardSection() {
     } finally {
       setRefreshingAll(false);
     }
-  };
+  }, [refreshAll]);
 
-  const handleRefreshPlatform = async (platform: string) => {
+  const handleRefreshPlatform = useCallback(async (platform: string) => {
     const platformKey = platform.toLowerCase();
 
     // Clear any existing timeouts for this platform
@@ -182,7 +199,7 @@ export default function SocialPlatformCardSection() {
         clickedPlatformTimeoutRef.current = null;
       }, 500);
     }
-  };
+  }, [refreshPlatform]);
 
   return (
     <section className="flex flex-col gap-6">

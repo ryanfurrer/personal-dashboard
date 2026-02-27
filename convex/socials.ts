@@ -553,6 +553,68 @@ export const refreshAllPlatforms = action({
   },
 });
 
+export const refreshAllPlatformsAtEasternMidnight = action({
+  args: {},
+  handler: async (
+    ctx
+  ): Promise<
+    | {
+        skipped: true;
+        reason: string;
+        easternDate: string;
+        easternTime: string;
+      }
+    | {
+        skipped: false;
+        easternDate: string;
+        easternTime: string;
+        successful: string[];
+        failed: Array<{ platform: string; error: string }>;
+        total: number;
+      }
+  > => {
+    const now = new Date();
+    const formatter = new Intl.DateTimeFormat("en-US", {
+      timeZone: "America/New_York",
+      hour12: false,
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+    const parts = formatter.formatToParts(now);
+    const partValue = (type: Intl.DateTimeFormatPartTypes): string =>
+      parts.find((part) => part.type === type)?.value ?? "";
+    const hour = partValue("hour");
+    const minute = partValue("minute");
+    const date = `${partValue("year")}-${partValue("month")}-${partValue("day")}`;
+
+    if (hour !== "00" || minute !== "00") {
+      return {
+        skipped: true,
+        reason: "Not midnight in America/New_York",
+        easternDate: date,
+        easternTime: `${hour}:${minute}`,
+      };
+    }
+
+    const result = (await ctx.runAction(api.socials.refreshAllPlatforms)) as {
+      successful: string[];
+      failed: Array<{ platform: string; error: string }>;
+      total: number;
+    };
+    return {
+      skipped: false,
+      easternDate: date,
+      easternTime: `${hour}:${minute}`,
+      successful: result.successful,
+      failed: result.failed,
+      total: result.total,
+    };
+  },
+});
+
 export const cleanupDuplicateSocials = action({
   args: {},
   handler: async (ctx): Promise<{ deleted: number; kept: number; total: number }> => {

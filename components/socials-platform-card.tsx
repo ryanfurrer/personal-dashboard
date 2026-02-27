@@ -82,22 +82,26 @@ export function SocialPlatformCard({
         ) : (
           <p className="text-xs text-destructive">Not updated</p>
         )}
-        <Button
-          nativeButton={false}
-          render={
-            <a
-              href={displayUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-            />
-          }
-          variant="linkInline"
-          size="sm"
-          data-icon="inline-end"
-        >
-          View Profile
-          <ArrowUpRight className="size-[1.2em]" />
-        </Button>
+        {displayUrl ? (
+          <Button
+            nativeButton={false}
+            render={
+              <a
+                href={displayUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+              />
+            }
+            variant="linkInline"
+            size="sm"
+            data-icon="inline-end"
+          >
+            View Profile
+            <ArrowUpRight className="size-[1.2em]" />
+          </Button>
+        ) : (
+          <p className="text-xs text-muted-foreground">Profile link unavailable</p>
+        )}
       </div>
     </div>
   );

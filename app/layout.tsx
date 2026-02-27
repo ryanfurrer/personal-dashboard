@@ -1,6 +1,6 @@
 import { NavSidebar } from "@/components/nav-sidebar";
 import { ThemeProvider } from "@/components/theme-provider";
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { SidebarProvider } from "@/components/ui/sidebar";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Inter } from "next/font/google";
 import { ConvexClientProvider } from "./ConvexClientProvider";

@@ -127,11 +127,11 @@ export function SocialsRefreshAllButton({
             </AlertDialogHeader>
             <div className="space-y-2 max-h-[60vh] overflow-y-auto">
               {refreshAllResult.failed.map((failure, index) => (
-                <div key={index} className="rounded-md bg-muted p-3">
+                <div key={`${failure.platform}-${index}`} className="rounded-md bg-muted p-3">
                   <p className="font-medium capitalize">{failure.platform}</p>
-                  <p className="text-sm text-muted-foreground wrap-break-word whitespace-pre-wrap">
-                    {failure.error}
-                  </p>
+                  <pre className="text-sm text-muted-foreground whitespace-pre-wrap wrap-break-words">
+                    <code>{failure.error}</code>
+                  </pre>
                 </div>
               ))}
             </div>
