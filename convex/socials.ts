@@ -6,7 +6,8 @@ import type { Doc } from "./_generated/dataModel";
 export const listSocials = query({
   args: {},
   handler: async (ctx) => {
-    return await ctx.db.query("socials").collect();
+    const socials = await ctx.db.query("socials").collect();
+    return socials.filter((social) => social.platform.toLowerCase() !== "linkedin");
   },
 });
 
@@ -14,13 +15,16 @@ export const fetchTwitterMetrics = action({
   args: {},
   handler: async () => {
     const bearerToken = process.env.TWITTER_BEARER_TOKEN;
-    if (!bearerToken) {
-      throw new Error("TWITTER_BEARER_TOKEN environment variable is not set");
+    const username = process.env.TWITTER_USERNAME ?? process.env.X_USERNAME;
+    if (!bearerToken || !username) {
+      throw new Error(
+        "TWITTER_BEARER_TOKEN and TWITTER_USERNAME (or X_USERNAME) environment variables are required"
+      );
     }
 
     try {
       const response = await fetch(
-        "https://api.twitter.com/2/users/by/username/ryandotfurrer?user.fields=public_metrics,username",
+        `https://api.twitter.com/2/users/by/username/${username}?user.fields=public_metrics,username`,
         {
           headers: {
             Authorization: `Bearer ${bearerToken}`,
@@ -42,10 +46,9 @@ export const fetchTwitterMetrics = action({
         throw new Error("Twitter API returned no user data");
       }
 
-      const follower_count =
-        user.public_metrics?.followers_count ?? 0;
-      const username = user.username;
-      const profile_url = `https://twitter.com/${username}`;
+      const follower_count = user.public_metrics?.followers_count ?? 0;
+      const twitterUsername = user.username;
+      const profile_url = `https://twitter.com/${twitterUsername}`;
 
       return {
         follower_count,
@@ -63,26 +66,55 @@ export const fetchTwitterMetrics = action({
 export const fetchBlueskyMetrics = action({
   args: {},
   handler: async () => {
-    const handle = process.env.BLUESKY_HANDLE;
+    const handle = process.env.BLUESKY_HANDLE?.trim();
     if (!handle) {
       throw new Error("BLUESKY_HANDLE environment variable is not set");
     }
 
+    const normalizedHandle = handle.replace(/^@/, "");
+
     // Format handle: append .bsky.social if not already present and not a DID
     const formattedHandle =
-      handle.includes(".") || handle.startsWith("did:")
-        ? handle
-        : `${handle}.bsky.social`;
+      normalizedHandle.includes(".") || normalizedHandle.startsWith("did:")
+        ? normalizedHandle
+        : `${normalizedHandle}.bsky.social`;
 
     try {
-      const response = await fetch(
-        `https://public.api.bsky.app/xrpc/app.bsky.actor.getProfile?actor=${formattedHandle}`,
-        {
+      const profilePath = "/xrpc/app.bsky.actor.getProfile";
+      const urls = [
+        `https://public.api.bsky.app${profilePath}`,
+        `https://bsky.social${profilePath}`,
+      ];
+      let response: Response | null = null;
+
+      for (const baseUrl of urls) {
+        const profileUrl = new URL(baseUrl);
+        profileUrl.searchParams.set("actor", formattedHandle);
+        response = await fetch(profileUrl.toString(), {
+          method: "GET",
           headers: {
             Accept: "application/json",
           },
+        });
+
+        if (response.ok) {
+          break;
         }
-      );
+
+        const errorText = await response.text();
+        const isBodyError =
+          response.status === 400 &&
+          errorText.includes("A request body was provided when none was expected");
+        if (!isBodyError) {
+          throw new Error(
+            `Bluesky API error: ${response.status} ${response.statusText} - ${errorText}`
+          );
+        }
+      }
+
+      if (!response) {
+        throw new Error("Bluesky API request failed before receiving a response");
+      }
 
       if (!response.ok) {
         const errorText = await response.text();
@@ -109,57 +141,6 @@ export const fetchBlueskyMetrics = action({
         throw new Error(`Failed to fetch Bluesky metrics: ${error.message}`);
       }
       throw new Error("Failed to fetch Bluesky metrics: Unknown error");
-    }
-  },
-});
-
-export const fetchLinkedInMetrics = action({
-  args: {},
-  handler: async () => {
-    const accessToken = process.env.LINKEDIN_ACCESS_TOKEN;
-    if (!accessToken) {
-      throw new Error("LINKEDIN_ACCESS_TOKEN environment variable is not set");
-    }
-
-    try {
-      // LinkedIn API v2 - Use /me endpoint to get profile URL
-      // Follower count is not available via API for personal profiles
-      const response = await fetch(
-        `https://api.linkedin.com/v2/me?projection=(id,vanityName)`,
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-            "X-Restli-Protocol-Version": "2.0.0",
-          },
-        }
-      );
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(
-          `LinkedIn API error: ${response.status} ${response.statusText} - ${errorText}`
-        );
-      }
-
-      const data = await response.json();
-      
-      // Extract numeric ID from response (format: urn:li:person:123456)
-      const personId = data.id || "";
-      const numericId = personId.replace("urn:li:person:", "") || "";
-      
-      // Use vanityName if available, otherwise use numeric ID
-      const profileSlug = data.vanityName ?? numericId;
-      const profile_url = `https://www.linkedin.com/in/${profileSlug}`;
-
-      return {
-        follower_count: 0, // Not available via API for personal profiles
-        profile_url,
-      };
-    } catch (error) {
-      if (error instanceof Error) {
-        throw new Error(`Failed to fetch LinkedIn metrics: ${error.message}`);
-      }
-      throw new Error("Failed to fetch LinkedIn metrics: Unknown error");
     }
   },
 });
@@ -438,7 +419,6 @@ function normalizePlatformName(platform: string): string {
     github: "GitHub",
     twitch: "Twitch",
     youtube: "YouTube",
-    linkedin: "LinkedIn",
   };
 
   return platformMap[normalized] || normalized;
@@ -506,6 +486,7 @@ export const refreshPlatform = action({
   },
   handler: async (ctx, args) => {
     const { platform } = args;
+    const normalizedPlatform = normalizePlatformName(platform);
 
     // Map platform name to fetch function
     let metrics: {
@@ -522,9 +503,6 @@ export const refreshPlatform = action({
       case "bluesky":
         metrics = await ctx.runAction(api.socials.fetchBlueskyMetrics);
         break;
-      case "linkedin":
-        metrics = await ctx.runAction(api.socials.fetchLinkedInMetrics);
-        break;
       case "twitch":
         metrics = await ctx.runAction(api.socials.fetchTwitchMetrics);
         break;
@@ -540,7 +518,7 @@ export const refreshPlatform = action({
 
     // Update database
     await ctx.runMutation(api.socials.updateSocialMetrics, {
-      platform: platform.toLowerCase(),
+      platform: normalizedPlatform,
       follower_count: metrics.follower_count,
       subscriber_count: metrics.subscriber_count,
       profile_url: metrics.profile_url,
@@ -559,7 +537,6 @@ export const refreshAllPlatforms = action({
     const platforms = [
       "twitter",
       "bluesky",
-      "linkedin",
       "twitch",
       "youtube",
       "github",
