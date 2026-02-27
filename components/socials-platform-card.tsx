@@ -14,7 +14,6 @@ interface SocialPlatformCardProps {
   url?: string;
   profile_url?: string;
   last_updated?: number;
-  platformKey: string;
   isClicked: boolean;
   result?: {
     success: boolean;
@@ -33,7 +32,6 @@ export function SocialPlatformCard({
   url,
   profile_url,
   last_updated,
-  platformKey,
   isClicked,
   result,
   isRefreshing,
@@ -49,7 +47,6 @@ export function SocialPlatformCard({
         <p className="font-semibold truncate">{platform}</p>
         <SocialsRefreshStatus
           platform={platform}
-          platformKey={platformKey}
           result={result}
           isRefreshing={isRefreshing}
           isClicked={isClicked}

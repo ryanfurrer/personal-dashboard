@@ -67,8 +67,12 @@ export const fetchBlueskyMetrics = action({
   args: {},
   handler: async () => {
     const handle = process.env.BLUESKY_HANDLE?.trim();
+    const appBaseUrl = process.env.APP_BASE_URL?.trim();
     if (!handle) {
       throw new Error("BLUESKY_HANDLE environment variable is not set");
+    }
+    if (!appBaseUrl) {
+      throw new Error("APP_BASE_URL environment variable is not set");
     }
 
     const normalizedHandle = handle.replace(/^@/, "");
@@ -80,43 +84,32 @@ export const fetchBlueskyMetrics = action({
         : `${normalizedHandle}.bsky.social`;
 
     try {
-      const profileUrl = new URL(
-        "https://public.api.bsky.app/xrpc/app.bsky.actor.getProfile"
-      );
-      profileUrl.searchParams.set("actor", formattedHandle);
+      const proxyUrl = new URL("/api/bluesky/profile", appBaseUrl);
+      proxyUrl.searchParams.set("actor", formattedHandle);
 
-      let data: { followersCount?: number; handle?: string } | null = null;
-      let lastError = "Unknown Bluesky error";
-
-      for (let attempt = 0; attempt < 3; attempt++) {
-        const response = await fetch(profileUrl.toString());
-        if (response.ok) {
-          data = (await response.json()) as {
-            followersCount?: number;
-            handle?: string;
-          };
-          break;
-        }
-
+      const response = await fetch(proxyUrl.toString());
+      if (!response.ok) {
+        const contentType = response.headers.get("content-type") ?? "";
         const errorText = await response.text();
-        lastError = `${response.status} ${response.statusText} - ${errorText}`;
-        const isRetryable =
-          (response.status === 400 &&
-            errorText.includes("A request body was provided when none was expected")) ||
-          (response.status === 401 && errorText.includes("AuthMissing")) ||
-          response.status >= 500;
-
-        if (!isRetryable) {
-          break;
+        if (response.status === 404 && contentType.includes("text/html")) {
+          throw new Error(
+            `Bluesky proxy route not found at ${proxyUrl.origin}/api/bluesky/profile. Set APP_BASE_URL to the deployed Next.js app that includes this route.`
+          );
         }
+        const compactErrorText =
+          errorText.length > 500 ? `${errorText.slice(0, 500)}...` : errorText;
+        throw new Error(
+          `Bluesky proxy error: ${response.status} ${response.statusText} - ${compactErrorText}`
+        );
       }
 
-      if (!data) {
-        throw new Error(`Bluesky API error: ${lastError}`);
-      }
-
-      const follower_count = data.followersCount ?? 0;
-      const profile_url = `https://bsky.app/profile/${data.handle ?? formattedHandle}`;
+      const data = (await response.json()) as {
+        follower_count?: number;
+        profile_url?: string;
+      };
+      const follower_count = data.follower_count ?? 0;
+      const profile_url =
+        data.profile_url ?? `https://bsky.app/profile/${formattedHandle}`;
 
       return {
         follower_count,

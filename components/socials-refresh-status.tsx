@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { Button } from "./ui/button";
 // @ts-expect-error - Direct import for performance (avoids loading 1,583 modules from barrel)
 import RefreshCw from "lucide-react/dist/esm/icons/refresh-cw";
@@ -21,7 +22,6 @@ import {
 
 interface SocialsRefreshStatusProps {
   platform: string;
-  platformKey: string;
   result?: {
     success: boolean;
     error?: string;
@@ -34,13 +34,60 @@ interface SocialsRefreshStatusProps {
 
 export function SocialsRefreshStatus({
   platform,
-  platformKey,
   result,
   isRefreshing,
   isClicked,
   isDisabled,
   onRefresh,
 }: SocialsRefreshStatusProps) {
+  const [copied, setCopied] = useState(false);
+
+  useEffect(() => {
+    if (!copied) return;
+    const timeout = setTimeout(() => setCopied(false), 1500);
+    return () => clearTimeout(timeout);
+  }, [copied]);
+
+  const handleCopyError = async () => {
+    if (!result?.error) return;
+    const isProduction = process.env.NODE_ENV === "production";
+
+    const fallbackCopy = (text: string) => {
+      const textarea = document.createElement("textarea");
+      textarea.value = text;
+      textarea.setAttribute("readonly", "");
+      textarea.style.position = "absolute";
+      textarea.style.left = "-9999px";
+      document.body.appendChild(textarea);
+      textarea.select();
+      const copiedSuccessfully = document.execCommand("copy");
+      document.body.removeChild(textarea);
+      return copiedSuccessfully;
+    };
+
+    try {
+      if (
+        typeof navigator !== "undefined" &&
+        navigator.clipboard &&
+        typeof navigator.clipboard.writeText === "function"
+      ) {
+        await navigator.clipboard.writeText(result.error);
+      } else if (!isProduction) {
+        const copiedSuccessfully = fallbackCopy(result.error);
+        if (!copiedSuccessfully) {
+          throw new Error("Clipboard API unavailable and fallback copy failed");
+        }
+      } else {
+        throw new Error(
+          "Clipboard API unavailable in production environment"
+        );
+      }
+      setCopied(true);
+    } catch (error) {
+      console.error("Failed to copy error text:", error);
+    }
+  };
+
   // Show status message if there's a result
   if (result) {
     if (result.success) {
@@ -82,11 +129,17 @@ export function SocialsRefreshStatus({
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <div className="rounded-md bg-muted p-3 max-h-[60vh] overflow-y-auto">
-                <p className="text-sm text-muted-foreground wrap-break-word whitespace-pre-wrap">
-                  {result.error}
-                </p>
+                <pre className="text-sm text-muted-foreground whitespace-pre-wrap wrap-break-words">
+                  <code>{result.error}</code>
+                </pre>
               </div>
               <AlertDialogFooter>
+                <Button
+                  onClick={handleCopyError}
+                  variant="outline"
+                >
+                  {copied ? "Copied" : "Copy Error"}
+                </Button>
                 <AlertDialogCancel>Close</AlertDialogCancel>
                 <Button onClick={onRefresh} variant="default">
                   Try Again

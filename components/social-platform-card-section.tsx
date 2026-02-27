@@ -219,7 +219,6 @@ export default function SocialPlatformCardSection() {
                 url={url}
                 profile_url={profile_url}
                 last_updated={last_updated}
-                platformKey={platformKey}
                 isClicked={isClicked}
                 result={result}
                 isRefreshing={isRefreshing}
