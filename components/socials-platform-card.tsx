@@ -1,6 +1,14 @@
 "use client";
 
 import { Button } from "./ui/button";
+import {
+  Card,
+  CardAction,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "./ui/card";
 // @ts-expect-error - Direct import for performance (avoids loading 1,583 modules from barrel)
 import ArrowUpRight from "lucide-react/dist/esm/icons/arrow-up-right";
 import { cn } from "@/lib/utils";
@@ -42,19 +50,21 @@ export function SocialPlatformCard({
   const displayUrl = profile_url || url;
 
   return (
-    <div className="flex flex-col gap-3 border rounded-lg p-3 min-w-0">
-      <div className="flex items-start justify-between min-w-0">
-        <p className="font-semibold truncate">{platform}</p>
-        <SocialsRefreshStatus
-          platform={platform}
-          result={result}
-          isRefreshing={isRefreshing}
-          isClicked={isClicked}
-          isDisabled={isDisabled}
-          onRefresh={onRefresh}
-        />
-      </div>
-      <div className="flex flex-col gap-1.5 overflow-hidden">
+    <Card size="sm">
+      <CardHeader>
+        <CardTitle className="truncate">{platform}</CardTitle>
+        <CardAction>
+          <SocialsRefreshStatus
+            platform={platform}
+            result={result}
+            isRefreshing={isRefreshing}
+            isClicked={isClicked}
+            isDisabled={isDisabled}
+            onRefresh={onRefresh}
+          />
+        </CardAction>
+      </CardHeader>
+      <CardContent className="flex flex-col gap-1.5 overflow-hidden">
         <div className="flex items-baseline gap-2 min-w-0">
           <span className="font-mono tabular-nums text-2xl truncate">
             {follower_count}
@@ -68,8 +78,8 @@ export function SocialPlatformCard({
             {subscriber_count} subscribers
           </span>
         )}
-      </div>
-      <div className="flex flex-col gap-1.5 overflow-hidden">
+      </CardContent>
+      <CardFooter className="flex-col items-start gap-1.5 overflow-hidden">
         {last_updated ? (
           <p
             className={cn(
@@ -102,7 +112,7 @@ export function SocialPlatformCard({
         ) : (
           <p className="text-xs text-muted-foreground">Profile link unavailable</p>
         )}
-      </div>
-    </div>
+      </CardFooter>
+    </Card>
   );
 }

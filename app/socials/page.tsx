@@ -8,6 +8,7 @@ export default function SocialsPage() {
             <PageHeader icon={MessageCircle} title="Socials" />
             <main className="p-4 lg:p-6">
                 <SocialPlatformCardSection />
+                <p>Add graphs, quick timeline picker, a date picker, and a way to filter by platform.</p>
             </main>
         </>
     );
