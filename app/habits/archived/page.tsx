@@ -1,4 +1,4 @@
-import HabitsSection from "@/components/habits-section";
+import HabitsSection from "../_components/habits-section";
 import PageHeader from "@/components/page-header";
 import { Archive } from "lucide-react";
 

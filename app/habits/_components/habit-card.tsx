@@ -1,7 +1,8 @@
 "use client";
 
-import { Button } from "./ui/button";
-import { Badge } from "./ui/badge";
+import type { Id } from "@/convex/_generated/dataModel";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardAction,
@@ -9,13 +10,13 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "./ui/card";
+} from "@/components/ui/card";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "./ui/dropdown-menu";
+} from "@/components/ui/dropdown-menu";
 // @ts-expect-error - Direct import for performance
 import Archive from "lucide-react/dist/esm/icons/archive";
 // @ts-expect-error - Direct import for performance
@@ -33,8 +34,7 @@ import {
   frequencySummary,
   progressLabel,
   streakLabel,
-} from "./habit-helpers";
-import type { Id } from "@/convex/_generated/dataModel";
+} from "../_lib/habit-helpers";
 
 type HabitCardProps = {
   habit: HabitWithStats;

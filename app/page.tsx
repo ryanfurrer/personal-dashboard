@@ -1,7 +1,7 @@
 import SocialPlatformCardSection from "@/components/social-platform-card-section";
 import PageHeader from "@/components/page-header";
 import { Home } from "lucide-react";
-import HabitsSection from "@/components/habits-section";
+import HabitsSection from "./habits/_components/habits-section";
 
 export default function Page() {
     return (

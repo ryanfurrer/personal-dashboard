@@ -12,6 +12,7 @@ import {
   SidebarMenuSub,
   SidebarMenuSubButton,
   SidebarMenuSubItem,
+  useSidebar,
 } from "@/components/ui/sidebar"
 import { CalendarCheck, Home, ListTodo, LogOut, MessageCircle, NotebookText, NotepadText } from "lucide-react"
 import { ModeToggle } from "./mode-toggle"
@@ -81,8 +82,18 @@ const footerItems = [
 
 export function NavSidebar() {
   const pathname = usePathname();
+  const { isMobile, setOpenMobile } = useSidebar();
   const archivedHabitsCount = useQuery(api.habits.getArchivedHabitsCount, {});
   const isHabitsRoute = pathname === "/habits" || pathname.startsWith("/habits/");
+  const handleNavClick = (disabled?: boolean) => (event: React.MouseEvent<HTMLElement>) => {
+    if (disabled) {
+      event.preventDefault();
+      return;
+    }
+    if (isMobile) {
+      setOpenMobile(false);
+    }
+  };
 
   return (
     <Sidebar collapsible="icon" className="border-none">
@@ -94,7 +105,7 @@ export function NavSidebar() {
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton
                     render={
-                      <Link href={item.url}>
+                      <Link href={item.url} onClick={handleNavClick()}>
                         <item.icon className="size-4" />
                         <span>{item.title}</span>
                       </Link>
@@ -106,7 +117,11 @@ export function NavSidebar() {
                       {(archivedHabitsCount ?? 0) > 0 && (
                         <SidebarMenuSubItem>
                           <SidebarMenuSubButton
-                            render={<Link href="/habits/archived">Archived</Link>}
+                            render={
+                              <Link href="/habits/archived" onClick={handleNavClick()}>
+                                Archived
+                              </Link>
+                            }
                             isActive={pathname === "/habits/archived"}
                           />
                         </SidebarMenuSubItem>
@@ -120,7 +135,12 @@ export function NavSidebar() {
                   <TooltipTrigger>
                     <SidebarMenuItem>
                       <SidebarMenuButton render={
-                        <Link href={item.url} aria-disabled={item.disabled} className={item.disabled ? "cursor-not-allowed" : undefined}>
+                        <Link
+                          href={item.url}
+                          aria-disabled={item.disabled}
+                          className={item.disabled ? "cursor-not-allowed" : undefined}
+                          onClick={handleNavClick(item.disabled)}
+                        >
                           <item.icon className="size-4" />
                           <span>{item.title}</span>
                         </Link>
@@ -144,7 +164,11 @@ export function NavSidebar() {
           {footerItems.map((item) => (
             <SidebarMenuItem key={item.title}>
               <SidebarMenuButton render={
-                <a href={item.url} aria-disabled={item.disabled}>
+                <a
+                  href={item.url}
+                  aria-disabled={item.disabled}
+                  onClick={handleNavClick(item.disabled)}
+                >
                   <item.icon />
                   <span>{item.title}</span>
                 </a>
