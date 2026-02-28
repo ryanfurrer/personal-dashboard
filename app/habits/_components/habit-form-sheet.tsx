@@ -69,7 +69,14 @@ export function HabitFormSheet({
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side={isMobile ? "bottom" : "right"} className="w-full sm:max-w-md">
+      <SheetContent
+        side={isMobile ? "bottom" : "right"}
+        className={
+          isMobile
+            ? "w-full max-h-[90dvh] rounded-t-xl"
+            : "w-full sm:max-w-md"
+        }
+      >
         <SheetHeader>
           <SheetTitle>{editingHabitId ? "Edit Habit" : "Create Habit"}</SheetTitle>
           <SheetDescription>
