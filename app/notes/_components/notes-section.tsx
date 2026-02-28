@@ -23,6 +23,7 @@ export default function NotesSection() {
 
   const [editorValue, setEditorValue] = useState("");
   const [isFocused, setIsFocused] = useState(false);
+  const [optimisticValue, setOptimisticValue] = useState<string | null>(null);
 
   const orderedNotes = useMemo(
     () => (notes ?? []).toSorted((a, b) => a.created_at - b.created_at),
@@ -30,11 +31,15 @@ export default function NotesSection() {
   );
   const noteLines = useMemo(() => orderedNotes.map((note) => note.content), [orderedNotes]);
   const serverValue = useMemo(() => noteLines.join("\n"), [noteLines]);
-  const displayedValue = isFocused ? editorValue : serverValue;
+  const pendingOptimisticValue =
+    optimisticValue !== null && optimisticValue !== serverValue
+      ? optimisticValue
+      : null;
+  const displayedValue = isFocused ? editorValue : pendingOptimisticValue ?? serverValue;
 
-  const syncNotes = async () => {
+  const syncNotes = async (sourceValue: string) => {
     if (notes === undefined) return;
-    const desired = normalizeLines(editorValue);
+    const desired = normalizeLines(sourceValue);
     const existing = orderedNotes;
     const shared = Math.min(desired.length, existing.length);
 
@@ -70,12 +75,14 @@ export default function NotesSection() {
               setEditorValue(event.target.value);
             }}
             onFocus={() => {
-              setEditorValue(serverValue);
+              setEditorValue(displayedValue);
               setIsFocused(true);
             }}
             onBlur={() => {
+              const latestValue = editorValue;
+              setOptimisticValue(latestValue);
               setIsFocused(false);
-              void syncNotes();
+              void syncNotes(latestValue);
             }}
             placeholder="Write daily notes... use #tags to save important items."
             className="min-h-52"
