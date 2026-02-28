@@ -3,6 +3,7 @@ import PageHeader from "@/components/page-header";
 import { Home } from "lucide-react";
 import HabitsSection from "./habits/_components/habits-section";
 import TasksSection from "./tasks/_components/tasks-section";
+import NotesSection from "./notes/_components/notes-section";
 
 export default function Page() {
     return (
@@ -12,6 +13,7 @@ export default function Page() {
                 <SocialPlatformCardSection />
                 <HabitsSection />
                 <TasksSection />
+                <NotesSection />
             </main>
         </>
     );

@@ -65,6 +65,17 @@ export default defineSchema({
     .index("by_status_completed", ["status", "is_completed"])
     .index("by_due_date", ["due_date"]),
 
+  notes: defineTable({
+    content: v.string(),
+    tags: v.array(v.string()),
+    status: v.union(v.literal("active"), v.literal("deleted")),
+    created_at: v.number(),
+    updated_at: v.number(),
+    deleted_at: v.optional(v.number()),
+  })
+    .index("by_status", ["status"])
+    .index("by_status_created", ["status", "created_at"]),
+
   socials: defineTable({
     follower_count: v.float64(), // Free tier metric (all platforms)
     platform: v.string(),

@@ -12,6 +12,7 @@ import type * as crons from "../crons.js";
 import type * as habits from "../habits.js";
 import type * as http from "../http.js";
 import type * as migrations from "../migrations.js";
+import type * as notes from "../notes.js";
 import type * as socials from "../socials.js";
 import type * as tasks from "../tasks.js";
 
@@ -26,6 +27,7 @@ declare const fullApi: ApiFromModules<{
   habits: typeof habits;
   http: typeof http;
   migrations: typeof migrations;
+  notes: typeof notes;
   socials: typeof socials;
   tasks: typeof tasks;
 }>;
