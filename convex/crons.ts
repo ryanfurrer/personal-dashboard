@@ -7,7 +7,7 @@ const crons = cronJobs();
 crons.daily(
   "refresh-all-social-platforms",
   {
-    hourUTC: 4,
+    hourUTC: 5,
     minuteUTC: 0,
   },
   api.socials.refreshAllPlatforms,
