@@ -17,13 +17,9 @@ import {
 } from "@/components/ui/sidebar"
 import { CalendarCheck, Home, ListTodo, LogOut, MessageCircle, NotebookText, NotepadText } from "lucide-react"
 import { ModeToggle } from "./mode-toggle"
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip"
 import { usePathname } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 
@@ -87,25 +83,40 @@ export function NavSidebar() {
 
   return (
     <Sidebar collapsible="icon" className="border-none">
-      <SidebarContent className="pt-2">
-        <SidebarHeader className="h-10 flex-row items-center justify-center px-0">
-          <span className="font-black text-foreground text-3xl/none group-data-[collapsible=icon]:hidden">
-            me.
+      <SidebarContent className="pt-2 group-data-[collapsible=icon]:items-center">
+        <SidebarHeader className="h-13 flex-row items-center justify-center px-0">
+          <span className="flex items-center gap-2 group-data-[collapsible=icon]:hidden">
+            <Image src="/icon.svg" alt="me icon" width={24} height={24} className="size-6" />
+            <span className="font-black text-foreground text-3xl/none">me.</span>
           </span>
-          <span className="hidden font-black w-full text-center text-foreground text-sm/none group-data-[collapsible=icon]:inline">
-            me.
-          </span>
+          <Image
+            src="/icon.svg"
+            alt="me icon"
+            width={32}
+            height={32}
+            className="hidden size-8 group-data-[collapsible=icon]:inline-block"
+          />
         </SidebarHeader>
-        <SidebarGroup>
-          <SidebarGroupContent>
-            <SidebarMenu>
+        <SidebarGroup className="group-data-[collapsible=icon]:w-auto group-data-[collapsible=icon]:p-0">
+          <SidebarGroupContent className="group-data-[collapsible=icon]:w-auto">
+            <SidebarMenu className="group-data-[collapsible=icon]:w-auto group-data-[collapsible=icon]:items-center">
               {items.map((item) => (
-                <SidebarMenuItem key={item.title}>
+                <SidebarMenuItem
+                  key={item.title}
+                  className="group-data-[collapsible=icon]:flex group-data-[collapsible=icon]:justify-center"
+                >
                   <SidebarMenuButton
+                    className="group-data-[collapsible=icon]:justify-center"
                     render={
-                      <Link href={item.url} onClick={handleNavClick()}>
+                      <Link
+                        href={item.url}
+                        onClick={handleNavClick()}
+                        className="flex w-full items-center gap-2 group-data-[collapsible=icon]:justify-center"
+                      >
                         <item.icon className="size-4" />
-                        <span>{item.title}</span>
+                        <span className="group-data-[collapsible=icon]:hidden">
+                          {item.title}
+                        </span>
                       </Link>
                     }
                     isActive={item.url === "/habits" ? isHabitsRoute : pathname === item.url}
@@ -154,23 +165,34 @@ export function NavSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
-      <SidebarFooter>
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <ModeToggle />
+      <SidebarFooter className="group-data-[collapsible=icon]:items-center">
+        <SidebarMenu className="group-data-[collapsible=icon]:w-auto group-data-[collapsible=icon]:items-center">
+          <SidebarMenuItem className="group-data-[collapsible=icon]:flex group-data-[collapsible=icon]:justify-center">
+            <div className="flex w-full justify-start group-data-[collapsible=icon]:justify-center">
+              <ModeToggle />
+            </div>
           </SidebarMenuItem>
           {footerItems.map((item) => (
-            <SidebarMenuItem key={item.title}>
-              <SidebarMenuButton render={
-                <a
-                  href={item.url}
-                  aria-disabled={item.disabled}
-                  onClick={handleNavClick(item.disabled)}
-                >
-                  <item.icon />
-                  <span>{item.title}</span>
-                </a>
-              } />
+            <SidebarMenuItem
+              key={item.title}
+              className="group-data-[collapsible=icon]:flex group-data-[collapsible=icon]:justify-center"
+            >
+              <SidebarMenuButton
+                className="group-data-[collapsible=icon]:justify-center"
+                render={
+                  <a
+                    href={item.url}
+                    aria-disabled={item.disabled}
+                    onClick={handleNavClick(item.disabled)}
+                    className="flex w-full items-center gap-2 group-data-[collapsible=icon]:justify-center"
+                  >
+                    <item.icon />
+                    <span className="group-data-[collapsible=icon]:hidden">
+                      {item.title}
+                    </span>
+                  </a>
+                }
+              />
             </SidebarMenuItem>
           ))}
         </SidebarMenu>
