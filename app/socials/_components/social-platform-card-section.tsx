@@ -6,6 +6,8 @@ import { api } from "@/convex/_generated/api";
 import { SocialsRefreshAllButton } from "./socials-refresh-all-button";
 import { SocialPlatformCard } from "./socials-platform-card";
 import SectionHeader from "@/components/section-header";
+import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function SocialPlatformCardSection() {
   const socials = useQuery(api.socials.listSocials);
@@ -200,6 +202,7 @@ export default function SocialPlatformCardSection() {
       }, 500);
     }
   }, [refreshPlatform]);
+  const isLoading = socials === undefined;
 
   return (
     <section className="flex flex-col gap-6">
@@ -212,7 +215,26 @@ export default function SocialPlatformCardSection() {
         />
       } />
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6">
-        {socials?.map(
+        {isLoading
+          ? Array.from({ length: 6 }).map((_, index) => (
+              <Card key={`social-skeleton-${index}`} size="sm">
+                <CardHeader>
+                  <div className="flex w-full items-start justify-between gap-2">
+                    <Skeleton className="h-5 w-20" />
+                    <Skeleton className="h-6 w-6 rounded-sm" />
+                  </div>
+                </CardHeader>
+                <CardContent className="flex flex-col gap-2">
+                  <Skeleton className="h-8 w-16" />
+                  <Skeleton className="h-4 w-20" />
+                </CardContent>
+                <CardFooter className="flex flex-col items-start gap-2">
+                  <Skeleton className="h-4 w-28" />
+                  <Skeleton className="h-6 w-24" />
+                </CardFooter>
+              </Card>
+            ))
+          : socials?.map(
           ({
             _id,
             follower_count,

@@ -101,8 +101,13 @@ export function NavSidebar() {
   return (
     <Sidebar collapsible="icon" className="border-none">
       <SidebarContent className="pt-2">
-        <SidebarHeader className="flex-row items-center justify-center">
-          <span className="font-black text-foreground text-4xl/none">me.</span>
+        <SidebarHeader className="h-10 flex-row items-center justify-center px-0">
+          <span className="font-black text-foreground text-3xl/none group-data-[collapsible=icon]:hidden">
+            me.
+          </span>
+          <span className="hidden font-black w-full text-center text-foreground text-sm/none group-data-[collapsible=icon]:inline">
+            me.
+          </span>
         </SidebarHeader>
         <SidebarGroup>
           <SidebarGroupContent>
