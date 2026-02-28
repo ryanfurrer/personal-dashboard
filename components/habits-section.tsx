@@ -5,9 +5,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { Id } from "@/convex/_generated/dataModel";
 import { api } from "@/convex/_generated/api";
 import SectionHeader from "./section-header";
-import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
-import { Card, CardAction, CardContent, CardFooter, CardHeader, CardTitle } from "./ui/card";
+import { Card, CardContent } from "./ui/card";
 import {
   Combobox,
   ComboboxContent,
@@ -16,12 +15,6 @@ import {
   ComboboxItem,
   ComboboxList,
 } from "./ui/combobox";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "./ui/dropdown-menu";
 import { Input } from "./ui/input";
 import {
   Sheet,
@@ -42,44 +35,20 @@ import {
 import { Textarea } from "./ui/textarea";
 // @ts-expect-error - Direct import for performance
 import Plus from "lucide-react/dist/esm/icons/plus";
-// @ts-expect-error - Direct import for performance
-import MoreHorizontal from "lucide-react/dist/esm/icons/more-horizontal";
-// @ts-expect-error - Direct import for performance
-import Archive from "lucide-react/dist/esm/icons/archive";
-// @ts-expect-error - Direct import for performance
-import RotateCcw from "lucide-react/dist/esm/icons/rotate-ccw";
-// @ts-expect-error - Direct import for performance
-import Trash2 from "lucide-react/dist/esm/icons/trash-2";
-// @ts-expect-error - Direct import for performance
-import Pencil from "lucide-react/dist/esm/icons/pencil";
 
-type HabitsMode = "active" | "archived";
+import { HabitCard } from "./habit-card";
+import {
+  HabitStatusResult,
+  HabitWithStats,
+  HabitsMode,
+  WEEKDAYS,
+} from "./habit-helpers";
+
 type FrequencyType = "daily" | "weekly" | "monthly";
-
-type HabitWithStats = {
-  _id: Id<"habits">;
-  name: string;
-  description?: string;
-  start_date: string;
-  frequency_type: FrequencyType;
-  target_count: number;
-  selected_weekdays?: number[];
-  category: { _id: Id<"habitCategories">; name: string } | null;
-  currentPeriodProgress: number;
-  streak: number;
-  isStarted: boolean;
-  canCompleteToday: boolean;
-  isCompletedForCurrentPeriod: boolean;
-};
 
 type Category = {
   _id: Id<"habitCategories">;
   display_name: string;
-};
-
-type HabitStatusResult = {
-  success: boolean;
-  message: string;
 };
 
 type HabitFormState = {
@@ -92,54 +61,8 @@ type HabitFormState = {
   categoryInput: string;
 };
 
-const WEEKDAYS: Array<{ label: string; value: number }> = [
-  { label: "Mon", value: 1 },
-  { label: "Tue", value: 2 },
-  { label: "Wed", value: 3 },
-  { label: "Thu", value: 4 },
-  { label: "Fri", value: 5 },
-  { label: "Sat", value: 6 },
-  { label: "Sun", value: 7 },
-];
-
 function getTodayLocalDate(): string {
   return new Date().toLocaleDateString("en-CA");
-}
-
-function frequencySummary(habit: HabitWithStats): string {
-  if (habit.frequency_type === "daily") {
-    const weekdays =
-      habit.selected_weekdays && habit.selected_weekdays.length > 0
-        ? ` • ${habit.selected_weekdays
-          .map((weekday) => WEEKDAYS.find((d) => d.value === weekday)?.label ?? "")
-          .join(", ")}`
-        : "";
-    return `Daily • ${habit.target_count}/day${weekdays}`;
-  }
-  if (habit.frequency_type === "weekly") {
-    return `Weekly • ${habit.target_count}/week`;
-  }
-  return `Monthly • ${habit.target_count}/month`;
-}
-
-function streakLabel(habit: HabitWithStats): string {
-  if (habit.frequency_type === "daily") {
-    return `${habit.streak} day streak`;
-  }
-  if (habit.frequency_type === "weekly") {
-    return `${habit.streak} week streak`;
-  }
-  return `${habit.streak} month streak`;
-}
-
-function progressLabel(habit: HabitWithStats): string {
-  if (habit.frequency_type === "daily") {
-    return `Today ${habit.currentPeriodProgress}/${habit.target_count}`;
-  }
-  if (habit.frequency_type === "weekly") {
-    return `This week ${habit.currentPeriodProgress}/${habit.target_count}`;
-  }
-  return `This month ${habit.currentPeriodProgress}/${habit.target_count}`;
 }
 
 function toFormState(habit: HabitWithStats): HabitFormState {
@@ -495,98 +418,20 @@ export default function HabitsSection({ mode = "active" }: { mode?: HabitsMode }
             <div key={categoryName} className="flex flex-col gap-3">
               <h3 className="text-sm font-medium text-muted-foreground">{categoryName}</h3>
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                {categoryHabits.map((habit) => {
-                  const status = habitStatuses.get(habit._id);
-                  const actionDisabled = pendingHabitActionId === habit._id;
-                  const completeDisabled = actionDisabled || !habit.canCompleteToday;
-
-                  return (
-                    <Card key={habit._id} size="sm">
-                      <CardHeader>
-                        <CardTitle className="truncate">{habit.name}</CardTitle>
-                        <CardAction>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger
-                              render={
-                                <Button variant="ghost" size="icon-xs" aria-label="Habit actions" />
-                              }
-                            >
-                              <MoreHorizontal className="size-3" />
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="w-40">
-                              {mode === "active" && (
-                                <DropdownMenuItem onClick={() => openEditSheet(habit)}>
-                                  <Pencil className="size-4" />
-                                  Edit
-                                </DropdownMenuItem>
-                              )}
-                              {mode === "active" ? (
-                                <DropdownMenuItem onClick={() => handleArchiveHabit(habit)}>
-                                  <Archive className="size-4" />
-                                  Archive
-                                </DropdownMenuItem>
-                              ) : (
-                                <DropdownMenuItem onClick={() => handleRestoreHabit(habit)}>
-                                  <RotateCcw className="size-4" />
-                                  Restore
-                                </DropdownMenuItem>
-                              )}
-                              <DropdownMenuItem
-                                variant="destructive"
-                                onClick={() => handleDeleteHabit(habit)}
-                              >
-                                <Trash2 className="size-4" />
-                                Delete
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </CardAction>
-                      </CardHeader>
-
-                      <CardContent className="flex flex-col gap-2">
-                        {habit.description && (
-                          <p className="line-clamp-2 text-sm text-muted-foreground">
-                            {habit.description}
-                          </p>
-                        )}
-                        <p className="text-xs text-muted-foreground">{frequencySummary(habit)}</p>
-                        <p className="font-mono text-xl tabular-nums">
-                          {habit.currentPeriodProgress}/{habit.target_count}
-                        </p>
-                        <div className="flex items-center gap-2">
-                          <Badge variant="outline">{progressLabel(habit)}</Badge>
-                          <Badge variant="outline">{streakLabel(habit)}</Badge>
-                        </div>
-                        {!habit.isStarted && (
-                          <Badge variant="secondary">Starts on {habit.start_date}</Badge>
-                        )}
-                        {status && (
-                          <p
-                            className={`text-xs ${status.success ? "text-muted-foreground" : "text-destructive"}`}
-                          >
-                            {status.message}
-                          </p>
-                        )}
-                      </CardContent>
-
-                      {mode === "active" && (
-                        <CardFooter>
-                          <Button
-                            onClick={() => handleCompleteHabit(habit)}
-                            disabled={completeDisabled}
-                            size="sm"
-                          >
-                            {!habit.isStarted
-                              ? "Not Started"
-                              : habit.isCompletedForCurrentPeriod
-                                ? "Completed"
-                                : "Complete"}
-                          </Button>
-                        </CardFooter>
-                      )}
-                    </Card>
-                  );
-                })}
+                {categoryHabits.map((habit) => (
+                  <HabitCard
+                    key={habit._id}
+                    habit={habit}
+                    mode={mode}
+                    status={habitStatuses.get(habit._id)}
+                    pendingActionId={pendingHabitActionId}
+                    onEdit={openEditSheet}
+                    onComplete={handleCompleteHabit}
+                    onArchive={handleArchiveHabit}
+                    onRestore={handleRestoreHabit}
+                    onDelete={handleDeleteHabit}
+                  />
+                ))}
               </div>
             </div>
           ))}
