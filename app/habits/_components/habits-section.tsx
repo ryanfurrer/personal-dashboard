@@ -20,7 +20,7 @@ import {
   buildHabitMutationPayload,
   defaultHabitFormState,
   getTodayLocalDate,
-  groupHabitsByCategory,
+  sortHabits,
   toHabitFormState,
   validateHabitForm,
 } from "../_lib/habit-helpers";
@@ -76,10 +76,7 @@ export default function HabitsSection({ mode = "active" }: { mode?: HabitsMode }
     };
   }, []);
 
-  const groupedHabits = useMemo(
-    () => groupHabitsByCategory(habits ?? []),
-    [habits],
-  );
+  const sortedHabits = useMemo(() => sortHabits(habits ?? []), [habits]);
 
   const setTransientHeaderStatus = useCallback((status: HabitStatusResult | null) => {
     setHeaderStatus(status);
@@ -338,7 +335,7 @@ export default function HabitsSection({ mode = "active" }: { mode?: HabitsMode }
             </div>
           </div>
         </div>
-      ) : groupedHabits.length === 0 ? (
+      ) : sortedHabits.length === 0 ? (
         <Card>
           <CardContent>
             <p className="text-sm text-muted-foreground">
@@ -349,27 +346,20 @@ export default function HabitsSection({ mode = "active" }: { mode?: HabitsMode }
           </CardContent>
         </Card>
       ) : (
-        <div className="flex flex-col gap-6">
-          {groupedHabits.map(([categoryName, categoryHabits]) => (
-            <div key={categoryName} className="flex flex-col gap-3">
-              <h3 className="text-sm font-medium text-muted-foreground">{categoryName}</h3>
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                {categoryHabits.map((habit) => (
-                  <HabitCard
-                    key={habit._id}
-                    habit={habit}
-                    mode={mode}
-                    status={habitStatuses.get(habit._id)}
-                    pendingActionId={pendingHabitActionId}
-                    onEdit={openEditSheet}
-                    onComplete={handleCompleteHabit}
-                    onArchive={handleArchiveHabit}
-                    onRestore={handleRestoreHabit}
-                    onDelete={handleDeleteHabit}
-                  />
-                ))}
-              </div>
-            </div>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          {sortedHabits.map((habit) => (
+            <HabitCard
+              key={habit._id}
+              habit={habit}
+              mode={mode}
+              status={habitStatuses.get(habit._id)}
+              pendingActionId={pendingHabitActionId}
+              onEdit={openEditSheet}
+              onComplete={handleCompleteHabit}
+              onArchive={handleArchiveHabit}
+              onRestore={handleRestoreHabit}
+              onDelete={handleDeleteHabit}
+            />
           ))}
         </div>
       )}

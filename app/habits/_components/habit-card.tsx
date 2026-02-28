@@ -116,6 +116,7 @@ export function HabitCard({
             {habit.description}
           </p>
         )}
+        {habit.category?.name && <Badge variant="secondary">{habit.category.name}</Badge>}
         <p className="text-xs text-muted-foreground">{frequencySummary(habit)}</p>
         <p className="font-mono text-xl tabular-nums">
           {habit.currentPeriodProgress}/{habit.target_count}

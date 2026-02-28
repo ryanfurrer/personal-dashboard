@@ -154,18 +154,28 @@ export function buildHabitMutationPayload(
   };
 }
 
-export function groupHabitsByCategory(habits: HabitWithStats[]): Array<[string, HabitWithStats[]]> {
-  const groups = new Map<string, HabitWithStats[]>();
-  for (const habit of habits) {
-    const key = habit.category?.name ?? "Uncategorized";
-    const existing = groups.get(key);
-    if (existing) {
-      existing.push(habit);
-    } else {
-      groups.set(key, [habit]);
-    }
+function getFrequencySortRank(habit: HabitWithStats): number {
+  if (habit.frequency_type === "daily") {
+    return habit.selected_weekdays && habit.selected_weekdays.length > 0 ? 1 : 0;
   }
-  return Array.from(groups.entries()).sort(([a], [b]) => a.localeCompare(b));
+  if (habit.frequency_type === "weekly") {
+    return 2;
+  }
+  return 3;
+}
+
+export function sortHabits(habits: HabitWithStats[]): HabitWithStats[] {
+  return habits.toSorted((a, b) => {
+    const nameComparison = a.name.localeCompare(b.name, undefined, {
+      sensitivity: "base",
+    });
+    if (nameComparison !== 0) return nameComparison;
+
+    const frequencyComparison = getFrequencySortRank(a) - getFrequencySortRank(b);
+    if (frequencyComparison !== 0) return frequencyComparison;
+
+    return String(a._id).localeCompare(String(b._id));
+  });
 }
 
 export function frequencySummary(habit: HabitWithStats): string {
