@@ -51,6 +51,20 @@ export default defineSchema({
     .index("by_habit_local_date", ["habit_id", "local_date"])
     .index("by_habit_period", ["habit_id", "period_key"]),
 
+  tasks: defineTable({
+    title: v.string(),
+    notes: v.optional(v.string()),
+    due_date: v.optional(v.string()), // YYYY-MM-DD local date
+    is_completed: v.boolean(),
+    status: v.union(v.literal("active"), v.literal("deleted")),
+    created_at: v.number(),
+    updated_at: v.number(),
+    deleted_at: v.optional(v.number()),
+  })
+    .index("by_status", ["status"])
+    .index("by_status_completed", ["status", "is_completed"])
+    .index("by_due_date", ["due_date"]),
+
   socials: defineTable({
     follower_count: v.float64(), // Free tier metric (all platforms)
     platform: v.string(),

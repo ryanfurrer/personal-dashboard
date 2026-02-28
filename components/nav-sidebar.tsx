@@ -13,7 +13,6 @@ import {
   SidebarMenuSub,
   SidebarMenuSubButton,
   SidebarMenuSubItem,
-  SidebarTrigger,
   useSidebar,
 } from "@/components/ui/sidebar"
 import { CalendarCheck, Home, ListTodo, LogOut, MessageCircle, NotebookText, NotepadText } from "lucide-react"
@@ -27,7 +26,6 @@ import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
-import { Kbd } from "./ui/kbd"
 
 
 const items = [
@@ -46,17 +44,15 @@ const items = [
     url: "/habits",
     icon: CalendarCheck,
   },
-]
-
-
-const comingSoonItems = [
   {
     title: "Tasks",
     url: "/tasks",
     icon: ListTodo,
-    disabled: true,
-    tooltip: "Coming soon",
   },
+]
+
+
+const comingSoonItems = [
   {
     title: "Notes",
     url: "/notes",
