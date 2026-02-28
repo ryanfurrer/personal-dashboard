@@ -2,10 +2,10 @@
 
 import { useState, useRef, useEffect, useCallback } from "react";
 import { useQuery, useAction } from "convex/react";
-import { api } from "../convex/_generated/api";
+import { api } from "@/convex/_generated/api";
 import { SocialsRefreshAllButton } from "./socials-refresh-all-button";
 import { SocialPlatformCard } from "./socials-platform-card";
-import SectionHeader from "./section-header";
+import SectionHeader from "@/components/section-header";
 
 export default function SocialPlatformCardSection() {
   const socials = useQuery(api.socials.listSocials);

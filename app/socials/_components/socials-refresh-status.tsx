@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Button } from "./ui/button";
+import { Button } from "@/components/ui/button";
 // @ts-expect-error - Direct import for performance (avoids loading 1,583 modules from barrel)
 import RefreshCw from "lucide-react/dist/esm/icons/refresh-cw";
 // @ts-expect-error - Direct import for performance (avoids loading 1,583 modules from barrel)
@@ -18,7 +18,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "./ui/alert-dialog";
+} from "@/components/ui/alert-dialog";
 
 interface SocialsRefreshStatusProps {
   platform: string;

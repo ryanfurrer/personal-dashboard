@@ -1,5 +1,5 @@
 import PageHeader from "@/components/page-header";
-import SocialPlatformCardSection from "@/components/social-platform-card-section";
+import SocialPlatformCardSection from "./_components/social-platform-card-section";
 import { MessageCircle } from "lucide-react";
 
 export default function SocialsPage() {

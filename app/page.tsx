@@ -1,4 +1,4 @@
-import SocialPlatformCardSection from "@/components/social-platform-card-section";
+import SocialPlatformCardSection from "./socials/_components/social-platform-card-section";
 import PageHeader from "@/components/page-header";
 import { Home } from "lucide-react";
 import HabitsSection from "./habits/_components/habits-section";
