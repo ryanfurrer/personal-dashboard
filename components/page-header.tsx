@@ -11,7 +11,7 @@ interface PageHeaderProps {
 
 export default function PageHeader({ icon: Icon, title }: PageHeaderProps) {
   return (
-    <header className="py-2 text-sm border-b px-2">
+    <header className="py-2 text-sm border-b px-2 h-13">
       <div className="flex items-center gap-4">
         <div className="flex items-center gap-2">
           <Tooltip>

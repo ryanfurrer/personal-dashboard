@@ -6,12 +6,14 @@ import {
   SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
+  SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarMenuSub,
   SidebarMenuSubButton,
   SidebarMenuSubItem,
+  SidebarTrigger,
   useSidebar,
 } from "@/components/ui/sidebar"
 import { CalendarCheck, Home, ListTodo, LogOut, MessageCircle, NotebookText, NotepadText } from "lucide-react"
@@ -25,6 +27,7 @@ import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
+import { Kbd } from "./ui/kbd"
 
 
 const items = [
@@ -97,7 +100,10 @@ export function NavSidebar() {
 
   return (
     <Sidebar collapsible="icon" className="border-none">
-      <SidebarContent className="pt-4">
+      <SidebarContent className="pt-2">
+        <SidebarHeader className="flex-row items-center justify-center">
+          <span className="font-black text-foreground text-4xl/none">me.</span>
+        </SidebarHeader>
         <SidebarGroup>
           <SidebarGroupContent>
             <SidebarMenu>
