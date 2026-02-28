@@ -49,25 +49,16 @@ const items = [
     url: "/tasks",
     icon: ListTodo,
   },
-]
-
-
-const comingSoonItems = [
   {
     title: "Notes",
     url: "/notes",
     icon: NotepadText,
-    disabled: true,
-    tooltip: "Coming soon",
   },
   {
     title: "Journal",
     url: "/journal",
     icon: NotebookText,
-    disabled: true,
-    tooltip: "Coming soon",
   },
-
 ]
 const footerItems = [
   {
@@ -137,7 +128,7 @@ export function NavSidebar() {
                   )}
                 </SidebarMenuItem>
               ))}
-              {comingSoonItems.map((item) => (
+              {/* {comingSoonItems.map((item) => (
                 <Tooltip key={item.title} aria-label={`${item.title} is ${item.tooltip}`}>
                   <TooltipTrigger>
                     <SidebarMenuItem>
@@ -158,7 +149,7 @@ export function NavSidebar() {
                     {item.tooltip}
                   </TooltipContent>
                 </Tooltip>
-              ))}
+              ))} */}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
