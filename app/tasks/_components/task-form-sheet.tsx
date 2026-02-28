@@ -13,6 +13,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
+import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { TaskFormState } from "../_lib/task-helpers";
@@ -25,7 +26,9 @@ type TaskFormSheetProps = {
   setForm: React.Dispatch<React.SetStateAction<TaskFormState>>;
   formError: string | null;
   submitting: boolean;
-  onSubmit: () => void;
+  createMore: boolean;
+  onCreateMoreChange: (checked: boolean) => void;
+  onSubmit: () => Promise<void> | void;
 };
 
 export function TaskFormSheet({
@@ -36,9 +39,33 @@ export function TaskFormSheet({
   setForm,
   formError,
   submitting,
+  createMore,
+  onCreateMoreChange,
   onSubmit,
 }: TaskFormSheetProps) {
   const isMobile = useIsMobile();
+  const isCreateMode = editingTaskId === null;
+  const titleInputRef = React.useRef<HTMLInputElement>(null);
+
+  const submitWithMode = React.useCallback(async () => {
+    await onSubmit();
+  }, [onSubmit]);
+
+  const handleKeyDown = React.useCallback(
+    async (event: React.KeyboardEvent) => {
+      const isSubmitShortcut =
+        event.key === "Enter" && (event.metaKey || event.ctrlKey);
+      if (!isSubmitShortcut || submitting) return;
+      event.preventDefault();
+      await submitWithMode();
+      if (isCreateMode && createMore) {
+        requestAnimationFrame(() => {
+          titleInputRef.current?.focus();
+        });
+      }
+    },
+    [createMore, isCreateMode, submitWithMode, submitting],
+  );
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -49,6 +76,7 @@ export function TaskFormSheet({
             ? "w-full max-h-[90dvh] rounded-t-xl"
             : "w-full sm:max-w-md"
         }
+        onKeyDown={handleKeyDown}
       >
         <SheetHeader>
           <SheetTitle>{editingTaskId ? "Edit Task" : "Create Task"}</SheetTitle>
@@ -64,6 +92,7 @@ export function TaskFormSheet({
             </label>
             <Input
               id="task-title"
+              ref={titleInputRef}
               value={form.title}
               onChange={(event) =>
                 setForm((prev) => ({ ...prev, title: event.target.value }))
@@ -99,13 +128,25 @@ export function TaskFormSheet({
           </div>
 
           {formError && <p className="text-sm text-destructive">{formError}</p>}
+          {isCreateMode && (
+            <div className="flex items-center gap-2">
+              <Switch
+                id="task-create-more"
+                checked={createMore}
+                onCheckedChange={(checked) => onCreateMoreChange(Boolean(checked))}
+              />
+              <label htmlFor="task-create-more" className="text-sm text-muted-foreground">
+                Create more
+              </label>
+            </div>
+          )}
         </div>
 
         <SheetFooter className="border-t">
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
-          <Button onClick={onSubmit} disabled={submitting}>
+          <Button onClick={() => void submitWithMode()} disabled={submitting}>
             {submitting ? "Saving..." : editingTaskId ? "Save Changes" : "Create Task"}
           </Button>
         </SheetFooter>

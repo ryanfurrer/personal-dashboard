@@ -30,6 +30,8 @@ export default function TasksSection() {
   const deleteTask = useMutation(api.tasks.deleteTask);
 
   const [sheetOpen, setSheetOpen] = useState(false);
+  const [createMore, setCreateMore] = useState(false);
+  const createMoreRef = useRef(false);
   const [editingTaskId, setEditingTaskId] = useState<Id<"tasks"> | null>(null);
   const [form, setForm] = useState(defaultTaskFormState);
   const [formError, setFormError] = useState<string | null>(null);
@@ -43,6 +45,11 @@ export default function TasksSection() {
   );
   const headerStatusTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const taskStatusTimeoutsRef = useRef<Map<string, NodeJS.Timeout>>(new Map());
+
+  const handleCreateMoreChange = useCallback((checked: boolean) => {
+    createMoreRef.current = checked;
+    setCreateMore(checked);
+  }, []);
 
   useEffect(() => {
     const timeouts = taskStatusTimeoutsRef.current;
@@ -94,17 +101,26 @@ export default function TasksSection() {
 
   const openCreateSheet = useCallback(() => {
     setEditingTaskId(null);
+    handleCreateMoreChange(false);
     setForm(defaultTaskFormState());
     setFormError(null);
     setSheetOpen(true);
-  }, []);
+  }, [handleCreateMoreChange]);
 
   const openEditSheet = useCallback((task: TaskItem) => {
     setEditingTaskId(task._id);
+    handleCreateMoreChange(false);
     setForm(toTaskFormState(task));
     setFormError(null);
     setSheetOpen(true);
-  }, []);
+  }, [handleCreateMoreChange]);
+
+  const handleSheetOpenChange = useCallback((open: boolean) => {
+    setSheetOpen(open);
+    if (!open) {
+      handleCreateMoreChange(false);
+    }
+  }, [handleCreateMoreChange]);
 
   const handleSubmitForm = useCallback(async () => {
     setFormError(null);
@@ -115,6 +131,7 @@ export default function TasksSection() {
     }
 
     const payload = buildTaskMutationPayload(form);
+    const shouldCreateMore = editingTaskId === null && createMoreRef.current;
     setSubmittingForm(true);
     try {
       if (editingTaskId) {
@@ -136,9 +153,15 @@ export default function TasksSection() {
           success: true,
           message: "Task created",
         });
+
+        if (shouldCreateMore) {
+          setForm(defaultTaskFormState());
+          return;
+        }
       }
 
       setSheetOpen(false);
+      handleCreateMoreChange(false);
       setEditingTaskId(null);
       setForm(defaultTaskFormState());
     } catch (error) {
@@ -150,6 +173,7 @@ export default function TasksSection() {
     createTask,
     editingTaskId,
     form,
+    handleCreateMoreChange,
     setTransientHeaderStatus,
     updateTask,
   ]);
@@ -268,12 +292,14 @@ export default function TasksSection() {
 
       <TaskFormSheet
         open={sheetOpen}
-        onOpenChange={setSheetOpen}
+        onOpenChange={handleSheetOpenChange}
         editingTaskId={editingTaskId}
         form={form}
         setForm={setForm}
         formError={formError}
         submitting={submittingForm}
+        createMore={createMore}
+        onCreateMoreChange={handleCreateMoreChange}
         onSubmit={handleSubmitForm}
       />
     </section>

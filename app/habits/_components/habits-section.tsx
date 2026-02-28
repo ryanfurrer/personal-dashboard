@@ -44,6 +44,8 @@ export default function HabitsSection({ mode = "active" }: { mode?: HabitsMode }
   const deleteHabit = useMutation(api.habits.deleteHabit);
 
   const [sheetOpen, setSheetOpen] = useState(false);
+  const [createMore, setCreateMore] = useState(false);
+  const createMoreRef = useRef(false);
   const [editingHabitId, setEditingHabitId] = useState<Id<"habits"> | null>(null);
   const [form, setForm] = useState(defaultHabitFormState);
   const [formError, setFormError] = useState<string | null>(null);
@@ -57,6 +59,11 @@ export default function HabitsSection({ mode = "active" }: { mode?: HabitsMode }
   );
   const headerStatusTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const habitStatusTimeoutsRef = useRef<Map<string, NodeJS.Timeout>>(new Map());
+
+  const handleCreateMoreChange = useCallback((checked: boolean) => {
+    createMoreRef.current = checked;
+    setCreateMore(checked);
+  }, []);
 
   useEffect(() => {
     const habitStatusTimeouts = habitStatusTimeoutsRef.current;
@@ -107,17 +114,26 @@ export default function HabitsSection({ mode = "active" }: { mode?: HabitsMode }
 
   const openCreateSheet = useCallback(() => {
     setEditingHabitId(null);
+    handleCreateMoreChange(false);
     setForm(defaultHabitFormState());
     setFormError(null);
     setSheetOpen(true);
-  }, []);
+  }, [handleCreateMoreChange]);
 
   const openEditSheet = useCallback((habit: HabitWithStats) => {
     setEditingHabitId(habit._id);
+    handleCreateMoreChange(false);
     setForm(toHabitFormState(habit));
     setFormError(null);
     setSheetOpen(true);
-  }, []);
+  }, [handleCreateMoreChange]);
+
+  const handleSheetOpenChange = useCallback((open: boolean) => {
+    setSheetOpen(open);
+    if (!open) {
+      handleCreateMoreChange(false);
+    }
+  }, [handleCreateMoreChange]);
 
   const handleSubmitForm = useCallback(async () => {
     setFormError(null);
@@ -128,6 +144,7 @@ export default function HabitsSection({ mode = "active" }: { mode?: HabitsMode }
     }
 
     const payload = buildHabitMutationPayload(form, categories ?? []);
+    const shouldCreateMore = editingHabitId === null && createMoreRef.current;
     setSubmittingForm(true);
     try {
       if (editingHabitId) {
@@ -145,8 +162,14 @@ export default function HabitsSection({ mode = "active" }: { mode?: HabitsMode }
           success: true,
           message: "Habit created",
         });
+
+        if (shouldCreateMore) {
+          setForm(defaultHabitFormState());
+          return;
+        }
       }
       setSheetOpen(false);
+      handleCreateMoreChange(false);
       setEditingHabitId(null);
       setForm(defaultHabitFormState());
     } catch (error) {
@@ -159,6 +182,7 @@ export default function HabitsSection({ mode = "active" }: { mode?: HabitsMode }
     createHabit,
     editingHabitId,
     form,
+    handleCreateMoreChange,
     setTransientHeaderStatus,
     updateHabit,
   ]);
@@ -353,13 +377,15 @@ export default function HabitsSection({ mode = "active" }: { mode?: HabitsMode }
       {mode === "active" && (
         <HabitFormSheet
           open={sheetOpen}
-          onOpenChange={setSheetOpen}
+          onOpenChange={handleSheetOpenChange}
           editingHabitId={editingHabitId}
           form={form}
           setForm={setForm}
           formError={formError}
           categories={categories}
           submitting={submittingForm}
+          createMore={createMore}
+          onCreateMoreChange={handleCreateMoreChange}
           onSubmit={handleSubmitForm}
         />
       )}

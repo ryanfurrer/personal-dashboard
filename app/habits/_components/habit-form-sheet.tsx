@@ -28,6 +28,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
+import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import {
   CategoryOption,
@@ -48,7 +49,9 @@ type HabitFormSheetProps = {
   formError: string | null;
   categories: CategoryOption[] | undefined;
   submitting: boolean;
-  onSubmit: () => void;
+  createMore: boolean;
+  onCreateMoreChange: (checked: boolean) => void;
+  onSubmit: () => Promise<void> | void;
 };
 
 export function HabitFormSheet({
@@ -60,12 +63,36 @@ export function HabitFormSheet({
   formError,
   categories,
   submitting,
+  createMore,
+  onCreateMoreChange,
   onSubmit,
 }: HabitFormSheetProps) {
   const isMobile = useIsMobile();
+  const isCreateMode = editingHabitId === null;
+  const titleInputRef = React.useRef<HTMLInputElement>(null);
   const matchingCategory = findMatchingCategory(categories ?? [], form.categoryInput);
   const showCreateCategoryOption =
     form.categoryInput.trim().length > 0 && !matchingCategory;
+
+  const submitWithMode = React.useCallback(async () => {
+    await onSubmit();
+  }, [onSubmit]);
+
+  const handleKeyDown = React.useCallback(
+    async (event: React.KeyboardEvent) => {
+      const isSubmitShortcut =
+        event.key === "Enter" && (event.metaKey || event.ctrlKey);
+      if (!isSubmitShortcut || submitting) return;
+      event.preventDefault();
+      await submitWithMode();
+      if (isCreateMode && createMore) {
+        requestAnimationFrame(() => {
+          titleInputRef.current?.focus();
+        });
+      }
+    },
+    [createMore, isCreateMode, submitWithMode, submitting],
+  );
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -76,6 +103,7 @@ export function HabitFormSheet({
             ? "w-full max-h-[90dvh] rounded-t-xl"
             : "w-full sm:max-w-md"
         }
+        onKeyDown={handleKeyDown}
       >
         <SheetHeader>
           <SheetTitle>{editingHabitId ? "Edit Habit" : "Create Habit"}</SheetTitle>
@@ -90,6 +118,7 @@ export function HabitFormSheet({
             </label>
             <Input
               id="habit-name"
+              ref={titleInputRef}
               value={form.name}
               onChange={(event) =>
                 setForm((prev) => ({ ...prev, name: event.target.value }))
@@ -152,8 +181,8 @@ export function HabitFormSheet({
               {form.frequencyType === "daily"
                 ? "Times per day"
                 : form.frequencyType === "weekly"
-                ? "Times per week"
-                : "Times per month"}
+                  ? "Times per week"
+                  : "Times per month"}
             </label>
             <Input
               id="habit-target-count"
@@ -238,12 +267,24 @@ export function HabitFormSheet({
           </div>
 
           {formError && <p className="text-sm text-destructive">{formError}</p>}
+          {isCreateMode && (
+            <div className="flex items-center gap-2">
+              <Switch
+                id="habit-create-more"
+                checked={createMore}
+                onCheckedChange={(checked) => onCreateMoreChange(Boolean(checked))}
+              />
+              <label htmlFor="habit-create-more" className="text-sm text-muted-foreground">
+                Create more
+              </label>
+            </div>
+          )}
         </div>
         <SheetFooter className="border-t">
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
-          <Button onClick={onSubmit} disabled={submitting}>
+          <Button onClick={() => void submitWithMode()} disabled={submitting}>
             {submitting ? "Saving..." : editingHabitId ? "Save Changes" : "Create Habit"}
           </Button>
         </SheetFooter>
