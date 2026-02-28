@@ -1,6 +1,11 @@
 
 import PageHeader from "@/components/page-header";
 import { NotebookText } from "lucide-react";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+    title: "journal",
+};
 
 export default function JournalPage() {
     return (

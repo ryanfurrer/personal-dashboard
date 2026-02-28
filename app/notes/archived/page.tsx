@@ -1,6 +1,11 @@
 
 import PageHeader from "@/components/page-header";
 import { Archive } from "lucide-react";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+    title: "archived notes",
+};
 
 export default function ArchivedNotesPage() {
     return (

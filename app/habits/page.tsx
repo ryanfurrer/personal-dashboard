@@ -1,6 +1,11 @@
 import HabitsSection from "./_components/habits-section";
 import PageHeader from "@/components/page-header";
 import { CalendarCheck } from "lucide-react";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "habits",
+};
 
 export default function HabitsPage() {
   return (

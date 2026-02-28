@@ -1,6 +1,11 @@
 import PageHeader from "@/components/page-header";
 import { ListTodo } from "lucide-react";
+import type { Metadata } from "next";
 import TasksSection from "./_components/tasks-section";
+
+export const metadata: Metadata = {
+  title: "tasks",
+};
 
 export default function TasksPage() {
   return (

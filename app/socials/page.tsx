@@ -1,6 +1,11 @@
 import PageHeader from "@/components/page-header";
 import SocialPlatformCardSection from "./_components/social-platform-card-section";
 import { MessageCircle } from "lucide-react";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+    title: "socials",
+};
 
 export default function SocialsPage() {
     return (
