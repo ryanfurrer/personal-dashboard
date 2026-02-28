@@ -20,7 +20,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Personal Dashboard",
+  title: "me.",
   description: "A personal dashboard for tracking my activities, goals, and more.",
 };
 

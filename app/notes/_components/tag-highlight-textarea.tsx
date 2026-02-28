@@ -63,7 +63,7 @@ export default function TagHighlightTextarea({
       <Textarea
         value={value}
         defaultValue={defaultValue}
-        className={cn("border-none focus-visible:ring-0 shadow-none p-0 resize-none rounded-none", textValue.length > 0 ? "text-transparent caret-foreground" : "", className)}
+        className={cn("border-none focus-visible:ring-0 shadow-none p-0 resize-none rounded-none bg-transparent!", textValue.length > 0 ? "text-transparent caret-foreground" : "", className)}
         onScroll={handleScroll}
         {...props}
       />
