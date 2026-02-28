@@ -3,6 +3,7 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Inter } from "next/font/google";
+import { cookies } from "next/headers";
 import { ConvexClientProvider } from "./ConvexClientProvider";
 import "./globals.css";
 
@@ -23,11 +24,15 @@ export const metadata: Metadata = {
   description: "A personal dashboard for tracking my activities, goals, and more.",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const cookieStore = await cookies();
+  const sidebarCookie = cookieStore.get("sidebar_state")?.value;
+  const defaultSidebarOpen = sidebarCookie ? sidebarCookie === "true" : true;
+
   return (
     <html lang="en" className={inter.variable} suppressHydrationWarning>
       <body
@@ -40,7 +45,7 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <ConvexClientProvider>
-            <SidebarProvider className="p-2">
+            <SidebarProvider className="p-2" defaultOpen={defaultSidebarOpen}>
               <NavSidebar />
               <div className="w-full bg-background rounded-lg">
                 {children}
