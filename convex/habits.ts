@@ -496,6 +496,41 @@ export const deleteHabit = mutation({
   },
 });
 
+export const uncompleteHabit = mutation({
+  args: {
+    habitId: v.id("habits"),
+    localDate: v.string(),
+  },
+  handler: async (ctx, args) => {
+    assertValidLocalDate(args.localDate);
+    const habit = await ctx.db.get(args.habitId);
+    if (!habit || habit.status !== "active") {
+      throw new Error("Active habit not found");
+    }
+
+    const periodKey = getPeriodKeyForDate(args.localDate, habit.frequency_type);
+    const completions = (await ctx.db
+      .query("habitCompletions")
+      .withIndex("by_habit", (q) => q.eq("habit_id", args.habitId))
+      .collect()) as Doc<"habitCompletions">[];
+
+    const periodCompletions = habit.frequency_type === "daily"
+      ? completions.filter((c) => c.local_date === args.localDate)
+      : completions.filter((c) => c.period_key === periodKey);
+
+    if (periodCompletions.length === 0) {
+      return { decremented: false };
+    }
+
+    const mostRecent = periodCompletions.reduce((latest, c) =>
+      c.created_at > latest.created_at ? c : latest,
+    );
+
+    await ctx.db.delete(mostRecent._id);
+    return { decremented: true };
+  },
+});
+
 export const completeHabit = mutation({
   args: {
     habitId: v.id("habits"),

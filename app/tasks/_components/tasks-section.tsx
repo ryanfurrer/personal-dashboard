@@ -182,11 +182,7 @@ export default function TasksSection() {
     async (task: TaskItem) => {
       setPendingTaskActionId(task._id);
       try {
-        const result = await toggleTaskComplete({ taskId: task._id });
-        setTransientTaskStatus(task._id, {
-          success: true,
-          message: result.isCompleted ? "Task completed" : "Task reopened",
-        });
+        await toggleTaskComplete({ taskId: task._id });
       } catch (error) {
         setTransientTaskStatus(task._id, {
           success: false,

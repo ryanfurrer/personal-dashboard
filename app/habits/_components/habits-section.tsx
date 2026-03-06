@@ -39,6 +39,7 @@ export default function HabitsSection({ mode = "active" }: { mode?: HabitsMode }
   const createHabit = useMutation(api.habits.createHabit);
   const updateHabit = useMutation(api.habits.updateHabit);
   const completeHabit = useMutation(api.habits.completeHabit);
+  const uncompleteHabit = useMutation(api.habits.uncompleteHabit);
   const archiveHabit = useMutation(api.habits.archiveHabit);
   const restoreHabit = useMutation(api.habits.restoreHabit);
   const deleteHabit = useMutation(api.habits.deleteHabit);
@@ -188,19 +189,10 @@ export default function HabitsSection({ mode = "active" }: { mode?: HabitsMode }
     async (habit: HabitWithStats) => {
       setPendingHabitActionId(habit._id);
       try {
-        const result = await completeHabit({
+        await completeHabit({
           habitId: habit._id,
           localDate: getTodayLocalDate(),
           completedAt: Date.now(),
-        });
-        setTransientHabitStatus(habit._id, {
-          success: true,
-          message:
-            result?.incremented === false
-              ? "Target already met"
-              : result?.isStreakEligible === false
-              ? "Logged (not streak-eligible today)"
-              : "Logged completion",
         });
       } catch (error) {
         setTransientHabitStatus(habit._id, {
@@ -212,6 +204,26 @@ export default function HabitsSection({ mode = "active" }: { mode?: HabitsMode }
       }
     },
     [completeHabit, setTransientHabitStatus],
+  );
+
+  const handleUncompleteHabit = useCallback(
+    async (habit: HabitWithStats) => {
+      setPendingHabitActionId(habit._id);
+      try {
+        await uncompleteHabit({
+          habitId: habit._id,
+          localDate: getTodayLocalDate(),
+        });
+      } catch (error) {
+        setTransientHabitStatus(habit._id, {
+          success: false,
+          message: error instanceof Error ? error.message : String(error),
+        });
+      } finally {
+        setPendingHabitActionId(null);
+      }
+    },
+    [uncompleteHabit, setTransientHabitStatus],
   );
 
   const handleArchiveHabit = useCallback(
@@ -356,6 +368,7 @@ export default function HabitsSection({ mode = "active" }: { mode?: HabitsMode }
               pendingActionId={pendingHabitActionId}
               onEdit={openEditSheet}
               onComplete={handleCompleteHabit}
+              onUncomplete={handleUncompleteHabit}
               onArchive={handleArchiveHabit}
               onRestore={handleRestoreHabit}
               onDelete={handleDeleteHabit}
