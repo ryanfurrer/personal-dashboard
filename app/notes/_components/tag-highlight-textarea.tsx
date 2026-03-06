@@ -12,7 +12,7 @@ function highlightTags(value: string): React.ReactNode {
     if (!part) return null;
     if (TAG_ONLY_PATTERN.test(part)) {
       return (
-        <span key={`tag-${index}`} className="font-medium text-red-600 dark:text-red-300">
+        <span key={`tag-${index}`} className="font-medium text-sky-600 dark:text-sky-400">
           {part}
         </span>
       );
@@ -48,10 +48,10 @@ export default function TagHighlightTextarea({
 
   return (
     <div className="relative">
-      {textValue.length > 0 && (
+      {textValue.length > 0 ? (
         <div
           ref={overlayRef}
-          aria-hidden
+          aria-hidden="true"
           className={cn(
             "pointer-events-none absolute inset-0 overflow-hidden whitespace-pre-wrap wrap-break-word text-base md:text-sm",
             className,
@@ -59,11 +59,15 @@ export default function TagHighlightTextarea({
         >
           {highlightTags(textValue)}
         </div>
-      )}
+      ) : null}
       <Textarea
         value={value}
         defaultValue={defaultValue}
-        className={cn("border-none focus-visible:ring-0 shadow-none p-0 resize-none rounded-none bg-transparent!", textValue.length > 0 ? "text-transparent caret-foreground" : "", className)}
+        className={cn(
+          "border-none focus-visible:ring-0 shadow-none p-0 resize-none rounded-none bg-transparent!",
+          textValue.length > 0 ? "text-transparent caret-foreground" : "",
+          className,
+        )}
         onScroll={handleScroll}
         {...props}
       />

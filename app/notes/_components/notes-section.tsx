@@ -5,6 +5,7 @@ import { useMemo, useState } from "react";
 import { api } from "@/convex/_generated/api";
 import SectionHeader from "@/components/section-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import type { NoteItem } from "../_lib/note-helpers";
 import TagHighlightTextarea from "./tag-highlight-textarea";
 
@@ -60,6 +61,18 @@ export default function NotesSection() {
       }
     }
   };
+
+  if (notes === undefined) {
+    return (
+      <section className="flex flex-col gap-6">
+        <SectionHeader title="Notes" id="notes" />
+        <div className="overflow-hidden rounded-xl bg-card ring-1 ring-foreground/10 shadow-xs p-4">
+          <Skeleton className="mb-3 h-4 w-24" />
+          <Skeleton className="h-52 w-full rounded-md" />
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="flex flex-col gap-6">

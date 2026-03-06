@@ -323,29 +323,34 @@ export default function HabitsSection({ mode = "active" }: { mode?: HabitsMode }
       />
 
       {isLoading ? (
-        <div className="flex flex-col gap-6">
-          <div className="flex flex-col gap-3">
-            <Skeleton className="h-4 w-28" />
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-              {Array.from({ length: 4 }).map((_, index) => (
-                <Card key={`habit-skeleton-${index}`} size="sm">
-                  <CardContent className="flex flex-col gap-3">
-                    <div className="flex items-start justify-between">
-                      <Skeleton className="h-5 w-24" />
-                      <Skeleton className="h-6 w-6 rounded-sm" />
-                    </div>
-                    <Skeleton className="h-4 w-3/4" />
-                    <Skeleton className="h-8 w-20" />
-                    <div className="flex gap-2">
-                      <Skeleton className="h-5 w-20" />
-                      <Skeleton className="h-5 w-16" />
-                    </div>
-                    <Skeleton className="h-8 w-24" />
-                  </CardContent>
-                </Card>
-              ))}
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          {Array.from({ length: 4 }).map((_, index) => (
+            <div
+              key={`habit-skeleton-${index}`}
+              className="relative flex flex-col overflow-hidden rounded-xl bg-card ring-1 ring-foreground/10 shadow-xs"
+            >
+              <div className="absolute inset-x-0 top-0 h-px bg-muted" />
+              <div className="flex flex-col gap-3 p-4 pt-[18px]">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex min-w-0 flex-1 flex-col gap-1">
+                    <Skeleton className="h-4 w-28" />
+                    <Skeleton className="h-3 w-20" />
+                  </div>
+                  <Skeleton className="size-5 shrink-0 rounded" />
+                </div>
+                <div className="flex items-baseline gap-1">
+                  <Skeleton className="h-7 w-8" />
+                  <Skeleton className="h-4 w-6" />
+                </div>
+                <Skeleton className="h-1.5 w-full rounded-full" />
+                <div className="flex gap-1.5">
+                  <Skeleton className="h-4 w-16 rounded-full" />
+                  <Skeleton className="h-4 w-14 rounded-full" />
+                </div>
+                <Skeleton className="h-8 w-full rounded-md" />
+              </div>
             </div>
-          </div>
+          ))}
         </div>
       ) : sortedHabits.length === 0 ? (
         <Card>

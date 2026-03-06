@@ -246,20 +246,23 @@ export default function TasksSection() {
       {isLoading ? (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {Array.from({ length: 4 }).map((_, index) => (
-            <Card key={`task-skeleton-${index}`} size="sm">
-              <CardContent className="flex flex-col gap-3">
-                <div className="flex items-start justify-between">
-                  <Skeleton className="h-5 w-28" />
-                  <Skeleton className="h-6 w-6 rounded-sm" />
-                </div>
-                <Skeleton className="h-4 w-3/4" />
-                <div className="flex gap-2">
-                  <Skeleton className="h-5 w-16" />
-                  <Skeleton className="h-5 w-24" />
-                </div>
-                <Skeleton className="h-8 w-24" />
-              </CardContent>
-            </Card>
+            <div
+              key={`task-skeleton-${index}`}
+              className="relative flex flex-col overflow-hidden rounded-xl bg-card ring-1 ring-foreground/10 shadow-xs p-4"
+            >
+              <div className="absolute bottom-3 left-0 top-3 w-[3px] rounded-r-full bg-muted" />
+              <div className="flex items-start gap-2.5">
+                <Skeleton className="mt-px size-[18px] shrink-0 rounded-full" />
+                <Skeleton className="h-4 flex-1" />
+                <Skeleton className="size-5 shrink-0 rounded" />
+              </div>
+              <div className="mt-3 pl-[26px]">
+                <Skeleton className="h-3 w-3/4" />
+              </div>
+              <div className="mt-2.5 pl-[26px]">
+                <Skeleton className="h-4 w-20 rounded-full" />
+              </div>
+            </div>
           ))}
         </div>
       ) : sortedTasks.length === 0 ? (
