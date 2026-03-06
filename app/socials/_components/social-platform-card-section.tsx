@@ -6,7 +6,6 @@ import { api } from "@/convex/_generated/api";
 import { SocialsRefreshAllButton } from "./socials-refresh-all-button";
 import { SocialPlatformCard } from "./socials-platform-card";
 import SectionHeader from "@/components/section-header";
-import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export default function SocialPlatformCardSection() {
@@ -217,30 +216,27 @@ export default function SocialPlatformCardSection() {
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6">
         {isLoading
           ? Array.from({ length: 6 }).map((_, index) => (
-              <Card key={`social-skeleton-${index}`} size="sm">
-                <CardHeader>
-                  <div className="flex w-full items-start justify-between gap-2">
-                    <Skeleton className="h-5 w-20" />
-                    <Skeleton className="h-6 w-6 rounded-sm" />
+              <div
+                key={`social-skeleton-${index}`}
+                className="flex flex-col justify-between rounded-xl bg-card p-4 ring-1 ring-foreground/10 shadow-xs min-h-[148px]"
+              >
+                <div className="flex flex-col gap-3">
+                  <Skeleton className="h-2.5 w-14" />
+                  <div className="flex flex-col gap-1.5">
+                    <Skeleton className="h-8 w-20" />
+                    <Skeleton className="h-2.5 w-12" />
                   </div>
-                </CardHeader>
-                <CardContent className="flex flex-col gap-2">
-                  <Skeleton className="h-8 w-16" />
-                  <Skeleton className="h-4 w-20" />
-                </CardContent>
-                <CardFooter className="flex flex-col items-start gap-2">
-                  <Skeleton className="h-4 w-28" />
-                  <Skeleton className="h-6 w-24" />
-                </CardFooter>
-              </Card>
+                </div>
+                <Skeleton className="h-2 w-20" />
+              </div>
             ))
           : socials?.map(
           ({
             _id,
             follower_count,
             subscriber_count,
-            previous_follower_count,
-            previous_subscriber_count,
+            follower_history,
+            subscriber_history,
             platform,
             url,
             profile_url,
@@ -257,8 +253,8 @@ export default function SocialPlatformCardSection() {
                 platform={platform}
                 follower_count={follower_count}
                 subscriber_count={subscriber_count}
-                previous_follower_count={previous_follower_count}
-                previous_subscriber_count={previous_subscriber_count}
+                follower_history={follower_history}
+                subscriber_history={subscriber_history}
                 url={url}
                 profile_url={profile_url}
                 last_updated={last_updated}

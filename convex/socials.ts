@@ -423,16 +423,31 @@ export const updateSocialMetrics = mutation({
       .first();
 
     if (existing) {
-      // Update existing record, preserving current counts as previous
+      const MAX_HISTORY = 30;
+
+      const newFollowerEntry = { count: existing.follower_count, timestamp: existing.last_updated ?? Date.now() };
+      const follower_history = [
+        ...(existing.follower_history ?? []),
+        newFollowerEntry,
+      ].slice(-MAX_HISTORY);
+
+      const newSubscriberEntry = existing.subscriber_count !== undefined
+        ? { count: existing.subscriber_count, timestamp: existing.last_updated ?? Date.now() }
+        : undefined;
+      const subscriber_history = newSubscriberEntry
+        ? [...(existing.subscriber_history ?? []), newSubscriberEntry].slice(-MAX_HISTORY)
+        : existing.subscriber_history;
+
+      // Update existing record
       await ctx.db.patch(existing._id, {
-        platform: normalizedPlatform, // Normalize with proper capitalization
-        previous_follower_count: existing.follower_count,
-        previous_subscriber_count: existing.subscriber_count,
+        platform: normalizedPlatform,
         follower_count: args.follower_count,
         subscriber_count: args.subscriber_count,
         profile_url: args.profile_url ?? existing.profile_url,
         url: args.url ?? existing.url,
         last_updated: now,
+        follower_history,
+        subscriber_history,
       });
       return existing._id;
     } else {
@@ -447,6 +462,81 @@ export const updateSocialMetrics = mutation({
       });
       return id;
     }
+  },
+});
+
+export const seedFollowerHistory = mutation({
+  args: {},
+  handler: async (ctx) => {
+    const socials = await ctx.db.query("socials").collect();
+    const now = Date.now();
+    const ONE_WEEK = 7 * 24 * 60 * 60 * 1000;
+    const POINTS = 20;
+
+    function buildHistory(currentCount: number, growthFraction: number, jitterFraction: number) {
+      const startCount = Math.round(currentCount * (1 - growthFraction));
+      const totalGrowth = currentCount - startCount;
+      const weeklyStep = totalGrowth / POINTS;
+      // Jitter is a fraction of the current count so it stays proportional
+      const jitterAbs = Math.max(1, currentCount * jitterFraction);
+
+      return Array.from({ length: POINTS }, (_, i) => {
+        const timestamp = now - (POINTS - i) * ONE_WEEK;
+        const noise = (Math.random() * 2 - 1) * jitterAbs;
+        const count = Math.max(0, Math.round(startCount + weeklyStep * i + noise));
+        return { count, timestamp };
+      });
+    }
+
+    // [totalGrowthFraction, weeklyJitterFraction]
+    // growth: total % gained over 20 weeks; jitter: ±% of current count per week
+    const GROWTH: Record<string, [number, number]> = {
+      twitter: [0.18, 0.015],
+      bluesky: [0.45, 0.030],
+      github:  [0.12, 0.008],
+      youtube: [0.25, 0.020],
+      twitch:  [0.22, 0.025],
+    };
+
+    for (const social of socials) {
+      const key = social.platform.toLowerCase();
+      const [fraction, jitter] = GROWTH[key] ?? [0.15, 0.015];
+
+      const follower_history = buildHistory(social.follower_count, fraction, jitter);
+
+      const subscriber_history =
+        social.subscriber_count !== undefined && social.subscriber_count > 0
+          ? buildHistory(social.subscriber_count, 0.15, 0.020)
+          : undefined;
+
+      await ctx.db.patch(social._id, { follower_history, subscriber_history });
+    }
+
+    return { seeded: socials.length };
+  },
+});
+
+export const purgePreviousCounts = mutation({
+  args: {},
+  handler: async (ctx) => {
+    const socials = await ctx.db.query("socials").collect();
+    for (const social of socials) {
+      const doc = social as Record<string, unknown>;
+      if ("previous_follower_count" in doc || "previous_subscriber_count" in doc) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        await ctx.db.replace(social._id, {
+          platform: social.platform,
+          follower_count: social.follower_count,
+          url: social.url,
+          subscriber_count: social.subscriber_count,
+          profile_url: social.profile_url,
+          last_updated: social.last_updated,
+          follower_history: social.follower_history,
+          subscriber_history: social.subscriber_history,
+        });
+      }
+    }
+    return { migrated: socials.length };
   },
 });
 

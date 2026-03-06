@@ -159,7 +159,7 @@ export function SocialsRefreshStatus({
       disabled={isDisabled}
       variant="ghost"
       size="icon-xs"
-      title={`Refresh ${platform}`}
+      aria-label={`Refresh ${platform}`}
       className="transition-opacity duration-200 ease-out-cubic"
     >
       <RefreshCw
