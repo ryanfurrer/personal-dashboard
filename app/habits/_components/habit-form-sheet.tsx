@@ -105,20 +105,25 @@ export function HabitFormSheet({
         }
         onKeyDown={handleKeyDown}
       >
+        {/* Top accent stripe */}
+        <div className="absolute inset-x-0 top-0 h-[2px] bg-emerald-500" />
+
         <SheetHeader>
           <SheetTitle>{editingHabitId ? "Edit Habit" : "Create Habit"}</SheetTitle>
           <SheetDescription>
             Configure the habit details and frequency.
           </SheetDescription>
         </SheetHeader>
-        <div className="flex flex-1 flex-col gap-4 overflow-y-auto px-4">
-          <div className="flex flex-col gap-1.5">
-            <label htmlFor="habit-name" className="text-sm font-medium">
+        <div className="flex flex-1 flex-col gap-5 overflow-y-auto overscroll-contain px-4">
+          <div className="flex flex-col gap-2">
+            <label htmlFor="habit-name" className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
               Name
             </label>
             <Input
               id="habit-name"
               ref={titleInputRef}
+              name="habit-name"
+              autoComplete="off"
               value={form.name}
               onChange={(event) =>
                 setForm((prev) => ({ ...prev, name: event.target.value }))
@@ -126,12 +131,14 @@ export function HabitFormSheet({
             />
           </div>
 
-          <div className="flex flex-col gap-1.5">
-            <label htmlFor="habit-description" className="text-sm font-medium">
+          <div className="flex flex-col gap-2">
+            <label htmlFor="habit-description" className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
               Description (optional)
             </label>
             <Textarea
               id="habit-description"
+              name="habit-description"
+              autoComplete="off"
               value={form.description}
               onChange={(event) =>
                 setForm((prev) => ({ ...prev, description: event.target.value }))
@@ -139,8 +146,8 @@ export function HabitFormSheet({
             />
           </div>
 
-          <div className="flex flex-col gap-1.5">
-            <label htmlFor="habit-start-date" className="text-sm font-medium">
+          <div className="flex flex-col gap-2">
+            <label htmlFor="habit-start-date" className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
               Start Date
             </label>
             <DatePicker
@@ -152,8 +159,8 @@ export function HabitFormSheet({
             />
           </div>
 
-          <div className="flex flex-col gap-1.5">
-            <label htmlFor="habit-frequency" className="text-sm font-medium">
+          <div className="flex flex-col gap-2">
+            <label htmlFor="habit-frequency" className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
               Frequency
             </label>
             <Select
@@ -176,8 +183,8 @@ export function HabitFormSheet({
             </Select>
           </div>
 
-          <div className="flex flex-col gap-1.5">
-            <label htmlFor="habit-target-count" className="text-sm font-medium">
+          <div className="flex flex-col gap-2">
+            <label htmlFor="habit-target-count" className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
               {form.frequencyType === "daily"
                 ? "Times per day"
                 : form.frequencyType === "weekly"
@@ -186,9 +193,12 @@ export function HabitFormSheet({
             </label>
             <Input
               id="habit-target-count"
+              name="habit-target-count"
               type="number"
+              inputMode="numeric"
               min={1}
               step={1}
+              autoComplete="off"
               value={form.targetCount}
               onChange={(event) =>
                 setForm((prev) => ({ ...prev, targetCount: event.target.value }))
@@ -196,10 +206,12 @@ export function HabitFormSheet({
             />
           </div>
 
-          {form.frequencyType === "daily" && (
+          {form.frequencyType === "daily" ? (
             <div className="flex flex-col gap-2">
-              <p className="text-sm font-medium">Selected Weekdays (optional)</p>
-              <div className="flex flex-wrap gap-2">
+              <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                Weekdays (optional)
+              </p>
+              <div className="flex flex-wrap gap-1.5">
                 {WEEKDAYS.map((weekday) => {
                   const isSelected = form.selectedWeekdays.includes(weekday.value);
                   return (
@@ -226,10 +238,10 @@ export function HabitFormSheet({
                 Leave empty to apply to all days.
               </p>
             </div>
-          )}
+          ) : null}
 
-          <div className="flex flex-col gap-1.5">
-            <label htmlFor="habit-category" className="text-sm font-medium">
+          <div className="flex flex-col gap-2">
+            <label htmlFor="habit-category" className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
               Category (optional)
             </label>
             <Combobox
@@ -266,19 +278,23 @@ export function HabitFormSheet({
             </Combobox>
           </div>
 
-          {formError && <p className="text-sm text-destructive">{formError}</p>}
-          {isCreateMode && (
-            <div className="flex items-center gap-2">
+          {formError ? (
+            <p className="rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
+              {formError}
+            </p>
+          ) : null}
+          {isCreateMode ? (
+            <div className="flex items-center justify-between gap-2 rounded-lg bg-muted/50 px-3 py-2.5">
+              <label htmlFor="habit-create-more" className="text-sm text-muted-foreground cursor-pointer select-none">
+                Create more
+              </label>
               <Switch
                 id="habit-create-more"
                 checked={createMore}
                 onCheckedChange={(checked) => onCreateMoreChange(Boolean(checked))}
               />
-              <label htmlFor="habit-create-more" className="text-sm text-muted-foreground">
-                Create more
-              </label>
             </div>
-          )}
+          ) : null}
         </div>
         <SheetFooter className="border-t">
           <Button variant="outline" onClick={() => onOpenChange(false)}>

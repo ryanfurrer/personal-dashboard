@@ -78,6 +78,9 @@ export function TaskFormSheet({
         }
         onKeyDown={handleKeyDown}
       >
+        {/* Top accent stripe */}
+        <div className="absolute inset-x-0 top-0 h-[2px] bg-primary" />
+
         <SheetHeader>
           <SheetTitle>{editingTaskId ? "Edit Task" : "Create Task"}</SheetTitle>
           <SheetDescription>
@@ -85,14 +88,16 @@ export function TaskFormSheet({
           </SheetDescription>
         </SheetHeader>
 
-        <div className="flex flex-1 flex-col gap-4 overflow-y-auto px-4">
-          <div className="flex flex-col gap-1.5">
-            <label htmlFor="task-title" className="text-sm font-medium">
+        <div className="flex flex-1 flex-col gap-5 overflow-y-auto overscroll-contain px-4">
+          <div className="flex flex-col gap-2">
+            <label htmlFor="task-title" className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
               Title
             </label>
             <Input
               id="task-title"
               ref={titleInputRef}
+              name="task-title"
+              autoComplete="off"
               value={form.title}
               onChange={(event) =>
                 setForm((prev) => ({ ...prev, title: event.target.value }))
@@ -100,12 +105,14 @@ export function TaskFormSheet({
             />
           </div>
 
-          <div className="flex flex-col gap-1.5">
-            <label htmlFor="task-notes" className="text-sm font-medium">
+          <div className="flex flex-col gap-2">
+            <label htmlFor="task-notes" className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
               Notes (optional)
             </label>
             <Textarea
               id="task-notes"
+              name="task-notes"
+              autoComplete="off"
               value={form.notes}
               onChange={(event) =>
                 setForm((prev) => ({ ...prev, notes: event.target.value }))
@@ -113,8 +120,8 @@ export function TaskFormSheet({
             />
           </div>
 
-          <div className="flex flex-col gap-1.5">
-            <label htmlFor="task-due-date" className="text-sm font-medium">
+          <div className="flex flex-col gap-2">
+            <label htmlFor="task-due-date" className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
               Due Date (optional)
             </label>
             <DatePicker
@@ -127,19 +134,23 @@ export function TaskFormSheet({
             />
           </div>
 
-          {formError && <p className="text-sm text-destructive">{formError}</p>}
-          {isCreateMode && (
-            <div className="flex items-center gap-2">
+          {formError ? (
+            <p className="rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
+              {formError}
+            </p>
+          ) : null}
+          {isCreateMode ? (
+            <div className="flex items-center justify-between gap-2 rounded-lg bg-muted/50 px-3 py-2.5">
+              <label htmlFor="task-create-more" className="text-sm text-muted-foreground cursor-pointer select-none">
+                Create more
+              </label>
               <Switch
                 id="task-create-more"
                 checked={createMore}
                 onCheckedChange={(checked) => onCreateMoreChange(Boolean(checked))}
               />
-              <label htmlFor="task-create-more" className="text-sm text-muted-foreground">
-                Create more
-              </label>
             </div>
-          )}
+          ) : null}
         </div>
 
         <SheetFooter className="border-t">
