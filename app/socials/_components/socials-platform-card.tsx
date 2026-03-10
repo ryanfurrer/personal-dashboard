@@ -224,7 +224,7 @@ export function SocialPlatformCard({
       )}
 
       {/* Top gradient: protects header + numbers from the chart behind */}
-      <div className="absolute inset-x-0 top-0 h-[65%] bg-gradient-to-b from-card via-card/95 to-transparent pointer-events-none" />
+      <div className="absolute inset-x-0 top-0 h-[65%] bg-linear-to-b from-card via-card/95 to-transparent pointer-events-none" />
 
       {/* Bottom platform glow */}
       {accentColor && (
@@ -245,7 +245,7 @@ export function SocialPlatformCard({
                 href={displayUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="transition-colors duration-150 hover:text-foreground focus-visible:outline-none focus-visible:underline"
+                className="transition-colors duration-150 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:underline"
               >
                 {platform}
               </a>

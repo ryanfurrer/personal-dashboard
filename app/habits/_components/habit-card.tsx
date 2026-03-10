@@ -1,5 +1,6 @@
 "use client";
 
+import { memo } from "react";
 import type { Id } from "@/convex/_generated/dataModel";
 import { Button } from "@/components/ui/button";
 import {
@@ -45,7 +46,7 @@ type HabitCardProps = {
   onDelete?: (habit: HabitWithStats) => void;
 };
 
-export function HabitCard({
+export const HabitCard = memo(function HabitCard({
   habit,
   mode,
   status,
@@ -252,4 +253,4 @@ export function HabitCard({
       </div>
     </article>
   );
-}
+});

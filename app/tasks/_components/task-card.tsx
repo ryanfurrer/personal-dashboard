@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { memo, useState } from "react";
 import type { Id } from "@/convex/_generated/dataModel";
 import { Button } from "@/components/ui/button";
 import {
@@ -51,7 +51,7 @@ type TaskCardProps = {
   onDelete?: (task: TaskItem) => void;
 };
 
-export function TaskCard({
+export const TaskCard = memo(function TaskCard({
   task,
   status,
   pendingActionId,
@@ -209,4 +209,4 @@ export function TaskCard({
       </div>
     </article>
   );
-}
+});

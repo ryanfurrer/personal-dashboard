@@ -12,7 +12,7 @@ export default function SectionHeader({ title, action, id }: SectionHeaderProps)
         <div className="flex items-center gap-4">
             <h2
                 id={headingId}
-                className="shrink-0 font-display text-[11px] font-bold uppercase tracking-widest text-muted-foreground"
+                className="shrink-0 scroll-mt-20 font-display text-[11px] font-bold uppercase tracking-widest text-muted-foreground"
             >
                 {title}
             </h2>

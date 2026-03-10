@@ -1,10 +1,10 @@
 // @ts-expect-error - Direct import for performance
 import Home from "lucide-react/dist/esm/icons/home";
 import PageHeader from "@/components/page-header";
-import SocialPlatformCardSection from "./socials/_components/social-platform-card-section";
 import HabitsSection from "./habits/_components/habits-section";
 import TasksSection from "./tasks/_components/tasks-section";
 import NotesSection from "./notes/_components/notes-section";
+import SocialPlatformCardSectionDynamic from "./socials/_components/social-platform-card-section-dynamic";
 
 export default function Page() {
   return (
@@ -30,7 +30,7 @@ export default function Page() {
           </div>
 
           {/* Social metrics — full width, informational */}
-          <SocialPlatformCardSection />
+          <SocialPlatformCardSectionDynamic />
 
         </div>
       </main>

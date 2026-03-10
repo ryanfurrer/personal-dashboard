@@ -125,6 +125,12 @@
 }
 
 @layer base {
+  :root {
+    color-scheme: light;
+  }
+  .dark {
+    color-scheme: dark;
+  }
   * {
     @apply border-border outline-ring/50;
   }
@@ -225,6 +231,18 @@
 
   .animate-green-fade {
     animation: green-fade 2.5s var(--ease-out-quart);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .animate-fade-slide-up,
+    .animate-fade-slide-down,
+    .animate-fade-scale,
+    .animate-fade-scale-out,
+    .animate-fade-slide-left,
+    .animate-fade-slide-right,
+    .animate-green-fade {
+      animation: none;
+    }
   }
 
   @keyframes fade-slide-up {

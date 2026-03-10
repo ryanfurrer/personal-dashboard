@@ -193,23 +193,3 @@ export function frequencySummary(habit: HabitWithStats): string {
   }
   return `Monthly • ${habit.target_count}/month`;
 }
-
-export function progressLabel(habit: HabitWithStats): string {
-  if (habit.frequency_type === "daily") {
-    return `Today ${habit.currentPeriodProgress}/${habit.target_count}`;
-  }
-  if (habit.frequency_type === "weekly") {
-    return `This week ${habit.currentPeriodProgress}/${habit.target_count}`;
-  }
-  return `This month ${habit.currentPeriodProgress}/${habit.target_count}`;
-}
-
-export function streakLabel(habit: HabitWithStats): string {
-  if (habit.frequency_type === "daily") {
-    return `${habit.streak} day streak`;
-  }
-  if (habit.frequency_type === "weekly") {
-    return `${habit.streak} week streak`;
-  }
-  return `${habit.streak} month streak`;
-}
