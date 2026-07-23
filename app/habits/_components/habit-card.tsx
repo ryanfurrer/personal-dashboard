@@ -17,16 +17,13 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-// @ts-expect-error - Direct import for performance
-import Archive from "lucide-react/dist/esm/icons/archive";
-// @ts-expect-error - Direct import for performance
-import MoreHorizontal from "lucide-react/dist/esm/icons/more-horizontal";
-// @ts-expect-error - Direct import for performance
-import Pencil from "lucide-react/dist/esm/icons/pencil";
-// @ts-expect-error - Direct import for performance
-import RotateCcw from "lucide-react/dist/esm/icons/rotate-ccw";
-// @ts-expect-error - Direct import for performance
-import Trash2 from "lucide-react/dist/esm/icons/trash-2";
+import {
+  Archive,
+  MoreHorizontal,
+  Pencil,
+  RotateCcw,
+  Trash2,
+} from "lucide-react";
 import {
   HabitStatusResult,
   HabitWithStats,
@@ -100,7 +97,10 @@ export function HabitCard({
                 </DropdownMenuItem>
               )}
               {onDelete && (
-                <DropdownMenuItem variant="destructive" onClick={() => onDelete(habit)}>
+                <DropdownMenuItem
+                  variant="destructive"
+                  onClick={() => onDelete(habit)}
+                >
                   <Trash2 className="size-4" />
                   Delete
                 </DropdownMenuItem>
@@ -116,8 +116,12 @@ export function HabitCard({
             {habit.description}
           </p>
         )}
-        {habit.category?.name && <Badge variant="secondary">{habit.category.name}</Badge>}
-        <p className="text-xs text-muted-foreground">{frequencySummary(habit)}</p>
+        {habit.category?.name && (
+          <Badge variant="secondary">{habit.category.name}</Badge>
+        )}
+        <p className="text-xs text-muted-foreground">
+          {frequencySummary(habit)}
+        </p>
         <p className="font-mono text-xl tabular-nums">
           {habit.currentPeriodProgress}/{habit.target_count}
         </p>
@@ -149,8 +153,8 @@ export function HabitCard({
             {!habit.isStarted
               ? "Not Started"
               : habit.isCompletedForCurrentPeriod
-              ? "Completed"
-              : "Complete"}
+                ? "Completed"
+                : "Complete"}
           </Button>
         </CardFooter>
       )}

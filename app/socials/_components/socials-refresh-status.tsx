@@ -2,12 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-// @ts-expect-error - Direct import for performance (avoids loading 1,583 modules from barrel)
-import RefreshCw from "lucide-react/dist/esm/icons/refresh-cw";
-// @ts-expect-error - Direct import for performance (avoids loading 1,583 modules from barrel)
-import Check from "lucide-react/dist/esm/icons/check";
-// @ts-expect-error - Direct import for performance (avoids loading 1,583 modules from barrel)
-import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
+import { AlertCircle, Check, RefreshCw } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
   AlertDialog,
@@ -78,9 +73,7 @@ export function SocialsRefreshStatus({
           throw new Error("Clipboard API unavailable and fallback copy failed");
         }
       } else {
-        throw new Error(
-          "Clipboard API unavailable in production environment"
-        );
+        throw new Error("Clipboard API unavailable in production environment");
       }
       setCopied(true);
     } catch (error) {
@@ -134,10 +127,7 @@ export function SocialsRefreshStatus({
                 </pre>
               </div>
               <AlertDialogFooter>
-                <Button
-                  onClick={handleCopyError}
-                  variant="outline"
-                >
+                <Button onClick={handleCopyError} variant="outline">
                   {copied ? "Copied" : "Copy Error"}
                 </Button>
                 <AlertDialogCancel>Close</AlertDialogCancel>

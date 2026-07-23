@@ -1,12 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-// @ts-expect-error - Direct import for performance (avoids loading 1,583 modules from barrel)
-import RefreshCw from "lucide-react/dist/esm/icons/refresh-cw";
-// @ts-expect-error - Direct import for performance (avoids loading 1,583 modules from barrel)
-import Check from "lucide-react/dist/esm/icons/check";
-// @ts-expect-error - Direct import for performance (avoids loading 1,583 modules from barrel)
-import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
+import { AlertCircle, Check, RefreshCw } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
   AlertDialog,
@@ -100,8 +95,8 @@ export function SocialsRefreshAllButton({
               style={{ transitionTimingFunction: "var(--ease-out-cubic)" }}
             />
           ) : refreshAllResult &&
-              refreshAllResult.failed.length === 0 &&
-              refreshAllResult.successful.length > 0 ? (
+            refreshAllResult.failed.length === 0 &&
+            refreshAllResult.successful.length > 0 ? (
             <Check
               className={cn("size-[1.2em] transition-opacity duration-200")}
               style={{ transitionTimingFunction: "var(--ease-out-cubic)" }}
@@ -127,7 +122,10 @@ export function SocialsRefreshAllButton({
             </AlertDialogHeader>
             <div className="space-y-2 max-h-[60vh] overflow-y-auto">
               {refreshAllResult.failed.map((failure, index) => (
-                <div key={`${failure.platform}-${index}`} className="rounded-md bg-muted p-3">
+                <div
+                  key={`${failure.platform}-${index}`}
+                  className="rounded-md bg-muted p-3"
+                >
                   <p className="font-medium capitalize">{failure.platform}</p>
                   <pre className="text-sm text-muted-foreground whitespace-pre-wrap wrap-break-words">
                     <code>{failure.error}</code>
