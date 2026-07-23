@@ -8,8 +8,7 @@ import SectionHeader from "@/components/section-header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-// @ts-expect-error - Direct import for performance
-import Plus from "lucide-react/dist/esm/icons/plus";
+import { Plus } from "lucide-react";
 import { TaskCard } from "./task-card";
 import { TaskFormSheet } from "./task-form-sheet";
 import {
@@ -35,14 +34,15 @@ export default function TasksSection() {
   const [editingTaskId, setEditingTaskId] = useState<Id<"tasks"> | null>(null);
   const [form, setForm] = useState(defaultTaskFormState);
   const [formError, setFormError] = useState<string | null>(null);
-  const [headerStatus, setHeaderStatus] = useState<TaskStatusResult | null>(null);
-  const [submittingForm, setSubmittingForm] = useState(false);
-  const [pendingTaskActionId, setPendingTaskActionId] = useState<Id<"tasks"> | null>(
+  const [headerStatus, setHeaderStatus] = useState<TaskStatusResult | null>(
     null,
   );
-  const [taskStatuses, setTaskStatuses] = useState<Map<string, TaskStatusResult>>(
-    new Map(),
-  );
+  const [submittingForm, setSubmittingForm] = useState(false);
+  const [pendingTaskActionId, setPendingTaskActionId] =
+    useState<Id<"tasks"> | null>(null);
+  const [taskStatuses, setTaskStatuses] = useState<
+    Map<string, TaskStatusResult>
+  >(new Map());
   const headerStatusTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const taskStatusTimeoutsRef = useRef<Map<string, NodeJS.Timeout>>(new Map());
 
@@ -65,39 +65,45 @@ export default function TasksSection() {
   const sortedTasks = useMemo(() => sortTasks(tasks ?? []), [tasks]);
   const isLoading = tasks === undefined;
 
-  const setTransientHeaderStatus = useCallback((status: TaskStatusResult | null) => {
-    setHeaderStatus(status);
-    if (headerStatusTimeoutRef.current) {
-      clearTimeout(headerStatusTimeoutRef.current);
-    }
-    if (!status) return;
-    headerStatusTimeoutRef.current = setTimeout(() => {
-      setHeaderStatus(null);
-      headerStatusTimeoutRef.current = null;
-    }, 4000);
-  }, []);
+  const setTransientHeaderStatus = useCallback(
+    (status: TaskStatusResult | null) => {
+      setHeaderStatus(status);
+      if (headerStatusTimeoutRef.current) {
+        clearTimeout(headerStatusTimeoutRef.current);
+      }
+      if (!status) return;
+      headerStatusTimeoutRef.current = setTimeout(() => {
+        setHeaderStatus(null);
+        headerStatusTimeoutRef.current = null;
+      }, 4000);
+    },
+    [],
+  );
 
-  const setTransientTaskStatus = useCallback((taskId: string, status: TaskStatusResult) => {
-    setTaskStatuses((prev) => {
-      const next = new Map(prev);
-      next.set(taskId, status);
-      return next;
-    });
-
-    const existing = taskStatusTimeoutsRef.current.get(taskId);
-    if (existing) clearTimeout(existing);
-
-    const timeout = setTimeout(() => {
+  const setTransientTaskStatus = useCallback(
+    (taskId: string, status: TaskStatusResult) => {
       setTaskStatuses((prev) => {
         const next = new Map(prev);
-        next.delete(taskId);
+        next.set(taskId, status);
         return next;
       });
-      taskStatusTimeoutsRef.current.delete(taskId);
-    }, 4000);
 
-    taskStatusTimeoutsRef.current.set(taskId, timeout);
-  }, []);
+      const existing = taskStatusTimeoutsRef.current.get(taskId);
+      if (existing) clearTimeout(existing);
+
+      const timeout = setTimeout(() => {
+        setTaskStatuses((prev) => {
+          const next = new Map(prev);
+          next.delete(taskId);
+          return next;
+        });
+        taskStatusTimeoutsRef.current.delete(taskId);
+      }, 4000);
+
+      taskStatusTimeoutsRef.current.set(taskId, timeout);
+    },
+    [],
+  );
 
   const openCreateSheet = useCallback(() => {
     setEditingTaskId(null);
@@ -107,20 +113,26 @@ export default function TasksSection() {
     setSheetOpen(true);
   }, [handleCreateMoreChange]);
 
-  const openEditSheet = useCallback((task: TaskItem) => {
-    setEditingTaskId(task._id);
-    handleCreateMoreChange(false);
-    setForm(toTaskFormState(task));
-    setFormError(null);
-    setSheetOpen(true);
-  }, [handleCreateMoreChange]);
-
-  const handleSheetOpenChange = useCallback((open: boolean) => {
-    setSheetOpen(open);
-    if (!open) {
+  const openEditSheet = useCallback(
+    (task: TaskItem) => {
+      setEditingTaskId(task._id);
       handleCreateMoreChange(false);
-    }
-  }, [handleCreateMoreChange]);
+      setForm(toTaskFormState(task));
+      setFormError(null);
+      setSheetOpen(true);
+    },
+    [handleCreateMoreChange],
+  );
+
+  const handleSheetOpenChange = useCallback(
+    (open: boolean) => {
+      setSheetOpen(open);
+      if (!open) {
+        handleCreateMoreChange(false);
+      }
+    },
+    [handleCreateMoreChange],
+  );
 
   const handleSubmitForm = useCallback(async () => {
     setFormError(null);
@@ -201,7 +213,11 @@ export default function TasksSection() {
 
   const handleDeleteTask = useCallback(
     async (task: TaskItem) => {
-      if (!window.confirm(`Delete "${task.title}"? It will no longer appear in the app.`)) {
+      if (
+        !window.confirm(
+          `Delete "${task.title}"? It will no longer appear in the app.`,
+        )
+      ) {
         return;
       }
       setPendingTaskActionId(task._id);
@@ -233,13 +249,19 @@ export default function TasksSection() {
             {headerStatus && (
               <p
                 className={`text-xs ${
-                  headerStatus.success ? "text-muted-foreground" : "text-destructive"
+                  headerStatus.success
+                    ? "text-muted-foreground"
+                    : "text-destructive"
                 }`}
               >
                 {headerStatus.message}
               </p>
             )}
-            <Button onClick={openCreateSheet} size="sm" data-icon="inline-start">
+            <Button
+              onClick={openCreateSheet}
+              size="sm"
+              data-icon="inline-start"
+            >
               <Plus className="size-[1.2em]" />
               New Task
             </Button>

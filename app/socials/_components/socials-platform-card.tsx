@@ -9,8 +9,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-// @ts-expect-error - Direct import for performance (avoids loading 1,583 modules from barrel)
-import ArrowUpRight from "lucide-react/dist/esm/icons/arrow-up-right";
+import { ArrowUpRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { formatTimestamp } from "@/lib/format-timestamp";
 import { SocialsRefreshStatus } from "./socials-refresh-status";
@@ -96,11 +95,7 @@ export function SocialPlatformCard({
           <Button
             nativeButton={false}
             render={
-              <a
-                href={displayUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-              />
+              <a href={displayUrl} target="_blank" rel="noopener noreferrer" />
             }
             variant="linkInline"
             size="sm"
@@ -110,7 +105,9 @@ export function SocialPlatformCard({
             <ArrowUpRight className="size-[1.2em]" />
           </Button>
         ) : (
-          <p className="text-xs text-muted-foreground">Profile link unavailable</p>
+          <p className="text-xs text-muted-foreground">
+            Profile link unavailable
+          </p>
         )}
       </CardFooter>
     </Card>

@@ -8,8 +8,7 @@ import SectionHeader from "@/components/section-header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-// @ts-expect-error - Direct import for performance
-import Plus from "lucide-react/dist/esm/icons/plus";
+import { Plus } from "lucide-react";
 import { HabitCard } from "./habit-card";
 import { HabitFormSheet } from "./habit-form-sheet";
 import {
@@ -25,7 +24,11 @@ import {
   validateHabitForm,
 } from "../_lib/habit-helpers";
 
-export default function HabitsSection({ mode = "active" }: { mode?: HabitsMode }) {
+export default function HabitsSection({
+  mode = "active",
+}: {
+  mode?: HabitsMode;
+}) {
   const localDate = getTodayLocalDate();
   const habits = useQuery(
     mode === "active"
@@ -34,8 +37,7 @@ export default function HabitsSection({ mode = "active" }: { mode?: HabitsMode }
     { localDate },
   ) as HabitWithStats[] | undefined;
   const categories = useQuery(api.habits.listCategories, {}) as
-    | CategoryOption[]
-    | undefined;
+    CategoryOption[] | undefined;
   const createHabit = useMutation(api.habits.createHabit);
   const updateHabit = useMutation(api.habits.updateHabit);
   const completeHabit = useMutation(api.habits.completeHabit);
@@ -46,17 +48,20 @@ export default function HabitsSection({ mode = "active" }: { mode?: HabitsMode }
   const [sheetOpen, setSheetOpen] = useState(false);
   const [createMore, setCreateMore] = useState(false);
   const createMoreRef = useRef(false);
-  const [editingHabitId, setEditingHabitId] = useState<Id<"habits"> | null>(null);
-  const [form, setForm] = useState(defaultHabitFormState);
-  const [formError, setFormError] = useState<string | null>(null);
-  const [headerStatus, setHeaderStatus] = useState<HabitStatusResult | null>(null);
-  const [submittingForm, setSubmittingForm] = useState(false);
-  const [pendingHabitActionId, setPendingHabitActionId] = useState<Id<"habits"> | null>(
+  const [editingHabitId, setEditingHabitId] = useState<Id<"habits"> | null>(
     null,
   );
-  const [habitStatuses, setHabitStatuses] = useState<Map<string, HabitStatusResult>>(
-    new Map(),
+  const [form, setForm] = useState(defaultHabitFormState);
+  const [formError, setFormError] = useState<string | null>(null);
+  const [headerStatus, setHeaderStatus] = useState<HabitStatusResult | null>(
+    null,
   );
+  const [submittingForm, setSubmittingForm] = useState(false);
+  const [pendingHabitActionId, setPendingHabitActionId] =
+    useState<Id<"habits"> | null>(null);
+  const [habitStatuses, setHabitStatuses] = useState<
+    Map<string, HabitStatusResult>
+  >(new Map());
   const headerStatusTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const habitStatusTimeoutsRef = useRef<Map<string, NodeJS.Timeout>>(new Map());
 
@@ -78,36 +83,42 @@ export default function HabitsSection({ mode = "active" }: { mode?: HabitsMode }
 
   const sortedHabits = useMemo(() => sortHabits(habits ?? []), [habits]);
 
-  const setTransientHeaderStatus = useCallback((status: HabitStatusResult | null) => {
-    setHeaderStatus(status);
-    if (headerStatusTimeoutRef.current) {
-      clearTimeout(headerStatusTimeoutRef.current);
-    }
-    if (!status) return;
-    headerStatusTimeoutRef.current = setTimeout(() => {
-      setHeaderStatus(null);
-      headerStatusTimeoutRef.current = null;
-    }, 4000);
-  }, []);
+  const setTransientHeaderStatus = useCallback(
+    (status: HabitStatusResult | null) => {
+      setHeaderStatus(status);
+      if (headerStatusTimeoutRef.current) {
+        clearTimeout(headerStatusTimeoutRef.current);
+      }
+      if (!status) return;
+      headerStatusTimeoutRef.current = setTimeout(() => {
+        setHeaderStatus(null);
+        headerStatusTimeoutRef.current = null;
+      }, 4000);
+    },
+    [],
+  );
 
-  const setTransientHabitStatus = useCallback((habitId: string, status: HabitStatusResult) => {
-    setHabitStatuses((prev) => {
-      const next = new Map(prev);
-      next.set(habitId, status);
-      return next;
-    });
-    const existing = habitStatusTimeoutsRef.current.get(habitId);
-    if (existing) clearTimeout(existing);
-    const timeout = setTimeout(() => {
+  const setTransientHabitStatus = useCallback(
+    (habitId: string, status: HabitStatusResult) => {
       setHabitStatuses((prev) => {
         const next = new Map(prev);
-        next.delete(habitId);
+        next.set(habitId, status);
         return next;
       });
-      habitStatusTimeoutsRef.current.delete(habitId);
-    }, 4000);
-    habitStatusTimeoutsRef.current.set(habitId, timeout);
-  }, []);
+      const existing = habitStatusTimeoutsRef.current.get(habitId);
+      if (existing) clearTimeout(existing);
+      const timeout = setTimeout(() => {
+        setHabitStatuses((prev) => {
+          const next = new Map(prev);
+          next.delete(habitId);
+          return next;
+        });
+        habitStatusTimeoutsRef.current.delete(habitId);
+      }, 4000);
+      habitStatusTimeoutsRef.current.set(habitId, timeout);
+    },
+    [],
+  );
 
   const openCreateSheet = useCallback(() => {
     setEditingHabitId(null);
@@ -117,20 +128,26 @@ export default function HabitsSection({ mode = "active" }: { mode?: HabitsMode }
     setSheetOpen(true);
   }, [handleCreateMoreChange]);
 
-  const openEditSheet = useCallback((habit: HabitWithStats) => {
-    setEditingHabitId(habit._id);
-    handleCreateMoreChange(false);
-    setForm(toHabitFormState(habit));
-    setFormError(null);
-    setSheetOpen(true);
-  }, [handleCreateMoreChange]);
-
-  const handleSheetOpenChange = useCallback((open: boolean) => {
-    setSheetOpen(open);
-    if (!open) {
+  const openEditSheet = useCallback(
+    (habit: HabitWithStats) => {
+      setEditingHabitId(habit._id);
       handleCreateMoreChange(false);
-    }
-  }, [handleCreateMoreChange]);
+      setForm(toHabitFormState(habit));
+      setFormError(null);
+      setSheetOpen(true);
+    },
+    [handleCreateMoreChange],
+  );
+
+  const handleSheetOpenChange = useCallback(
+    (open: boolean) => {
+      setSheetOpen(open);
+      if (!open) {
+        handleCreateMoreChange(false);
+      }
+    },
+    [handleCreateMoreChange],
+  );
 
   const handleSubmitForm = useCallback(async () => {
     setFormError(null);
@@ -199,8 +216,8 @@ export default function HabitsSection({ mode = "active" }: { mode?: HabitsMode }
             result?.incremented === false
               ? "Target already met"
               : result?.isStreakEligible === false
-              ? "Logged (not streak-eligible today)"
-              : "Logged completion",
+                ? "Logged (not streak-eligible today)"
+                : "Logged completion",
         });
       } catch (error) {
         setTransientHabitStatus(habit._id, {
@@ -259,7 +276,11 @@ export default function HabitsSection({ mode = "active" }: { mode?: HabitsMode }
 
   const handleDeleteHabit = useCallback(
     async (habit: HabitWithStats) => {
-      if (!window.confirm(`Delete "${habit.name}"? It will no longer appear in the app.`)) {
+      if (
+        !window.confirm(
+          `Delete "${habit.name}"? It will no longer appear in the app.`,
+        )
+      ) {
         return;
       }
       setPendingHabitActionId(habit._id);
@@ -294,14 +315,20 @@ export default function HabitsSection({ mode = "active" }: { mode?: HabitsMode }
             {headerStatus && (
               <p
                 className={`text-xs ${
-                  headerStatus.success ? "text-muted-foreground" : "text-destructive"
+                  headerStatus.success
+                    ? "text-muted-foreground"
+                    : "text-destructive"
                 }`}
               >
                 {headerStatus.message}
               </p>
             )}
             {mode === "active" && (
-              <Button onClick={openCreateSheet} size="sm" data-icon="inline-start">
+              <Button
+                onClick={openCreateSheet}
+                size="sm"
+                data-icon="inline-start"
+              >
                 <Plus className="size-[1.2em]" />
                 New Habit
               </Button>
